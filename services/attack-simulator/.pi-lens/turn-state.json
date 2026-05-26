@@ -1,0 +1,28 @@
+{
+  "files": {
+    "spoof_device.py": {
+      "modifiedRanges": [
+        {
+          "start": 1,
+          "end": 88
+        }
+      ],
+      "importsChanged": true,
+      "lastEdit": "2026-05-16T08:23:51.139Z"
+    },
+    "publish_flood.py": {
+      "modifiedRanges": [
+        {
+          "start": 1,
+          "end": 115
+        }
+      ],
+      "importsChanged": true,
+      "lastEdit": "2026-05-16T08:24:09.411Z"
+    }
+  },
+  "turnCycles": 0,
+  "maxCycles": 3,
+  "lastUpdated": "2026-05-16T08:24:09.412Z",
+  "sessionId": "lens-mp82sfr6-98e4e7ba"
+}

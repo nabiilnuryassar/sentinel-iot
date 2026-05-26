@@ -1,0 +1,92 @@
+[
+    {
+        "device_id": "temp-sensor-001",
+        "type": "temperature_sensor",
+        "building": "building-a",
+        "room": "lab-a",
+        "location": "lab-a",
+        "topic": "iot/building-a/lab-a/temp-sensor-001/telemetry",
+        "payload_template": {
+            "temperature": {"min": 22.0, "max": 32.0, "round": 1},
+            "humidity": {"min": 45, "max": 78, "round": 0},
+            "battery": {"min": 75, "max": 100, "round": 0},
+            "rssi": {"min": -85, "max": -55, "round": 0}
+        },
+        "anomaly": {
+            "temperature": 88.0,
+            "humidity": 12,
+            "battery": 5,
+            "rssi": -98
+        }
+    },
+    {
+        "device_id": "door-lock-001",
+        "type": "door_lock",
+        "building": "building-a",
+        "room": "lobby",
+        "location": "lobby",
+        "topic": "iot/building-a/lobby/door-lock-001/telemetry",
+        "payload_template": {
+            "door_status": {"choices": ["closed", "closed", "closed", "open"]},
+            "access_status": {"choices": ["granted", "granted", "granted", "idle"]},
+            "battery": {"min": 60, "max": 100, "round": 0}
+        },
+        "anomaly": {
+            "door_status": "open",
+            "access_status": "unauthorized",
+            "battery": 8
+        }
+    },
+    {
+        "device_id": "power-meter-001",
+        "type": "power_meter",
+        "building": "building-a",
+        "room": "server-room",
+        "location": "server-room",
+        "topic": "iot/building-a/server-room/power-meter-001/telemetry",
+        "payload_template": {
+            "voltage": {"min": 218.0, "max": 232.0, "round": 1},
+            "current": {"min": 4.5, "max": 12.0, "round": 2},
+            "power_usage": {"min": 980.0, "max": 2750.0, "round": 1}
+        },
+        "anomaly": {
+            "voltage": 290.0,
+            "current": 35.0,
+            "power_usage": 9800.0
+        }
+    },
+    {
+        "device_id": "air-quality-001",
+        "type": "air_quality",
+        "building": "building-a",
+        "room": "lab-a",
+        "location": "lab-a",
+        "topic": "iot/building-a/lab-a/air-quality-001/telemetry",
+        "payload_template": {
+            "co2": {"min": 420, "max": 950, "round": 0},
+            "pm25": {"min": 5.0, "max": 35.0, "round": 1},
+            "temperature": {"min": 23.0, "max": 28.0, "round": 1}
+        },
+        "anomaly": {
+            "co2": 2500,
+            "pm25": 180.0,
+            "temperature": 41.0
+        }
+    },
+    {
+        "device_id": "water-leak-001",
+        "type": "water_leak",
+        "building": "building-a",
+        "room": "server-room",
+        "location": "server-room",
+        "topic": "iot/building-a/server-room/water-leak-001/telemetry",
+        "payload_template": {
+            "leak_status": {"choices": ["dry", "dry", "dry", "dry"]},
+            "water_level": {"min": 0.0, "max": 2.0, "round": 2}
+        },
+        "anomaly": {
+            "leak_status": "leak_detected",
+            "water_level": 18.5
+        }
+    }
+]

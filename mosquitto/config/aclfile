@@ -1,0 +1,9 @@
+# sentinel_device: publish on iot/#
+user sentinel_device
+topic write iot/#
+
+# sentinel_ingestor: subscribe on iot/# and security/#
+user sentinel_ingestor
+topic read iot/#
+topic read security/#
+topic write security/#

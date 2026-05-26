@@ -1,0 +1,21 @@
+# Copy this file to docker-compose.override.yml to enable hot-reload.
+# Compose auto-merges any docker-compose.override.yml on top of docker-compose.yml.
+#
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#   docker compose up -d
+
+services:
+  laravel-app:
+    # Mount the repo over the image's /var/www/html so PHP picks up edits live.
+    # vendor/ and node_modules/ are excluded so they keep using the image's copy.
+    volumes:
+      - ./:/var/www/html
+      - laravel_vendor:/var/www/html/vendor
+      - laravel_node_modules:/var/www/html/node_modules
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+
+volumes:
+  laravel_vendor:
+  laravel_node_modules:

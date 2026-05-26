@@ -1,0 +1,85 @@
+name: sentinel-iot
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: sentinel-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/logs:/mosquitto/log
+      - mosquitto_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -u sentinel_device -P sentinel_mqtt_password -t iot/healthcheck/ping -m ok || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:16
+    container_name: sentinel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sentinel_iot
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel_password
+    # Host port 5433 -> container 5432 to avoid conflicts with other local Postgres instances.
+    # Inside the compose network, services still connect via host=postgres port=5432.
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d sentinel_iot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  laravel-app:
+    build:
+      context: .
+      dockerfile: docker/laravel.Dockerfile
+    container_name: sentinel-laravel
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+
+  mqtt-ingestor:
+    build:
+      context: ./services/mqtt-ingestor
+      dockerfile: Dockerfile
+    container_name: sentinel-mqtt-ingestor
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+
+  telegram-bot:
+    build:
+      context: ./services/telegram-bot
+      dockerfile: Dockerfile
+    container_name: sentinel-telegram-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      laravel-app:
+        condition: service_started
+    profiles: ["bot"]
+
+volumes:
+  mosquitto_data:
+  postgres_data:

@@ -1,0 +1,7 @@
+Waiting for Docker to be ready...
+Docker is up! Starting simulator...
+no such service: redis
+docker: Error response from daemon: the working directory 'C:/Program Files/Git/app' is invalid, it needs to be an absolute path
+
+Run 'docker run --help' for more information
+Simulator started successfully.

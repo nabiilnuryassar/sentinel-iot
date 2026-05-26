@@ -1,0 +1,4 @@
+{
+  "signature": "README.md::📐 Cascade errors in 1 neighbor file(s) — fix before finishing turn:\n<diagnostics file=\"tests/Feature/AgentControllerTest.php\" reason=\"fallback\">\n  line 18, col 12 rule=cascade:P1013: Undefined method 'actingAs'.\n  line 31, col 24 rule=cascade:P1013: Undefined method 'actingAs'.\n  line 48, col 12 rule=cascade:P1009: Undefined type 'DB'.\n  line 49, col 15 rule=cascade:P1009: Undefined type 'DB'.\n  line 55, col 12 rule=cascade:P1013: Undefined method 'actingAs'.\n  line 68, col 24 rule=cascade:P1013: Undefined method 'actingAs'.\n  line 92, col 12 rule=cascade:P1013: Undefined method 'actingAs'.\n</diagnostics>",
+  "sessionId": "lens-mpg70slf-2590dbf0"
+}

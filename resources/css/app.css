@@ -1,0 +1,229 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+
+@custom-variant dark (&:is(.dark *));
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@theme {
+    --font-sans:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+}
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+    --color-sentinel-bg-primary: var(--sentinel-bg-primary);
+    --color-sentinel-bg-secondary: var(--sentinel-bg-secondary);
+    --color-sentinel-bg-card: var(--sentinel-bg-card);
+    --color-sentinel-bg-elevated: var(--sentinel-bg-elevated);
+    --color-sentinel-teal: var(--sentinel-teal);
+    --color-sentinel-cyan: var(--sentinel-cyan);
+    --color-sentinel-blue: var(--sentinel-blue);
+    --color-sentinel-purple: var(--sentinel-purple);
+    --color-sentinel-emerald: var(--sentinel-emerald);
+    --color-sentinel-amber: var(--sentinel-amber);
+    --color-sentinel-orange: var(--sentinel-orange);
+    --color-sentinel-red: var(--sentinel-red);
+    --color-sentinel-rose: var(--sentinel-rose);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    --sentinel-bg-primary: #050b16;
+    --sentinel-bg-secondary: #071426;
+    --sentinel-bg-card: #0b1b2e;
+    --sentinel-bg-elevated: #10243a;
+    --sentinel-border-subtle: #1c334f;
+    --sentinel-border-active: #1fe6d0;
+    --sentinel-text-primary: #f8fafc;
+    --sentinel-text-secondary: #cbd5e1;
+    --sentinel-text-muted: #94a3b8;
+    --sentinel-text-disabled: #64748b;
+    --sentinel-teal: #1fe6d0;
+    --sentinel-cyan: #38bdf8;
+    --sentinel-blue: #3b82f6;
+    --sentinel-purple: #a855f7;
+    --sentinel-emerald: #10b981;
+    --sentinel-amber: #f59e0b;
+    --sentinel-orange: #fb923c;
+    --sentinel-red: #ef4444;
+    --sentinel-rose: #f43f5e;
+    --background: var(--sentinel-bg-primary);
+    --foreground: var(--sentinel-text-primary);
+    --card: var(--sentinel-bg-card);
+    --card-foreground: var(--sentinel-text-primary);
+    --popover: #071426;
+    --popover-foreground: var(--sentinel-text-primary);
+    --primary: var(--sentinel-teal);
+    --primary-foreground: #020617;
+    --secondary: #0f233a;
+    --secondary-foreground: var(--sentinel-text-secondary);
+    --muted: #0b1d32;
+    --muted-foreground: var(--sentinel-text-muted);
+    --accent: rgba(31, 230, 208, 0.12);
+    --accent-foreground: var(--sentinel-teal);
+    --destructive: var(--sentinel-red);
+    --border: rgba(148, 163, 184, 0.14);
+    --input: rgba(148, 163, 184, 0.16);
+    --ring: rgba(31, 230, 208, 0.5);
+    --chart-1: var(--sentinel-teal);
+    --chart-2: var(--sentinel-blue);
+    --chart-3: var(--sentinel-purple);
+    --chart-4: var(--sentinel-emerald);
+    --chart-5: var(--sentinel-amber);
+    --radius: 1rem;
+    --sidebar: var(--sentinel-bg-secondary);
+    --sidebar-foreground: var(--sentinel-text-secondary);
+    --sidebar-primary: var(--sentinel-teal);
+    --sidebar-primary-foreground: #020617;
+    --sidebar-accent: rgba(31, 230, 208, 0.12);
+    --sidebar-accent-foreground: var(--sentinel-teal);
+    --sidebar-border: rgba(148, 163, 184, 0.14);
+    --sidebar-ring: rgba(31, 230, 208, 0.5);
+}
+
+.dark {
+    --background: var(--sentinel-bg-primary);
+    --foreground: var(--sentinel-text-primary);
+    --card: var(--sentinel-bg-card);
+    --card-foreground: var(--sentinel-text-primary);
+    --popover: #071426;
+    --popover-foreground: var(--sentinel-text-primary);
+    --primary: var(--sentinel-teal);
+    --primary-foreground: #020617;
+    --secondary: #0f233a;
+    --secondary-foreground: var(--sentinel-text-secondary);
+    --muted: #0b1d32;
+    --muted-foreground: var(--sentinel-text-muted);
+    --accent: rgba(31, 230, 208, 0.12);
+    --accent-foreground: var(--sentinel-teal);
+    --destructive: var(--sentinel-red);
+    --border: rgba(148, 163, 184, 0.14);
+    --input: rgba(148, 163, 184, 0.16);
+    --ring: rgba(31, 230, 208, 0.5);
+    --sidebar: var(--sentinel-bg-secondary);
+    --sidebar-foreground: var(--sentinel-text-secondary);
+    --sidebar-primary: var(--sentinel-teal);
+    --sidebar-primary-foreground: #020617;
+    --sidebar-accent: rgba(31, 230, 208, 0.12);
+    --sidebar-accent-foreground: var(--sentinel-teal);
+    --sidebar-border: rgba(148, 163, 184, 0.14);
+    --sidebar-ring: rgba(31, 230, 208, 0.5);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+        background:
+            radial-gradient(
+                circle at top right,
+                rgba(31, 230, 208, 0.12),
+                transparent 32rem
+            ),
+            radial-gradient(
+                circle at bottom left,
+                rgba(56, 189, 248, 0.1),
+                transparent 28rem
+            ),
+            var(--background);
+    }
+    html {
+        @apply font-sans;
+    }
+}
+
+@layer components {
+    .sentinel-surface {
+        background: linear-gradient(
+            180deg,
+            rgba(15, 35, 58, 0.82),
+            rgba(7, 20, 38, 0.9)
+        );
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 16px 40px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(16px);
+    }
+
+    .sentinel-surface-active {
+        background: linear-gradient(
+            90deg,
+            rgba(31, 230, 208, 0.22),
+            rgba(56, 189, 248, 0.08)
+        );
+        border-color: rgba(31, 230, 208, 0.35);
+        box-shadow: 0 0 24px rgba(31, 230, 208, 0.12);
+    }
+
+    .sentinel-surface-critical {
+        background: linear-gradient(
+            180deg,
+            rgba(127, 29, 29, 0.28),
+            rgba(15, 23, 42, 0.84)
+        );
+        border-color: rgba(239, 68, 68, 0.5);
+        box-shadow: 0 0 24px rgba(239, 68, 68, 0.18);
+    }
+
+    .sentinel-grid-bg {
+        background-image:
+            linear-gradient(rgba(31, 230, 208, 0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(31, 230, 208, 0.035) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
+    .sentinel-glow-teal {
+        box-shadow: 0 0 24px rgba(31, 230, 208, 0.22);
+    }
+
+    .sentinel-glow-red {
+        box-shadow: 0 0 24px rgba(239, 68, 68, 0.22);
+    }
+}
