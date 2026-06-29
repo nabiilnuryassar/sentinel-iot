@@ -397,7 +397,55 @@ git commit -m "docs: user guide v2 (AI agent, Telegram, FAQ)"
 
 ---
 
-## Task 18: Final Commit + Tag Phase 3
+## Task 18: Full Stack Verification (MANDATORY before v1.0.0 tag)
+
+**Objective:** Verify ALL tests actually pass against a running Docker stack. This is the real verification gate.
+
+**Files:** None (verification only)
+
+**Step 1: Start Docker stack**
+```bash
+cd /forge/projects/sentinel-iot
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# Wait for all containers
+docker compose ps  # all Up
+```
+
+**Step 2: Verify Laravel is serving**
+```bash
+curl -sf http://localhost:8000/api/health
+# Expected: {"status":"ok","checks":{"database":"ok","mqtt":"ok"}}
+```
+
+**Step 3: Run PHP tests against Postgres**
+```bash
+# Temporarily override DB_CONNECTION in phpunit.xml to pgsql
+# OR run with env override:
+DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5433 DB_DATABASE=sentinel_iot DB_USERNAME=sentinel DB_PASSWORD=sentinel_password \
+  php artisan test --compact
+# Expected: 75+ passed
+```
+
+**Step 4: Run Playwright E2E — ALL phases**
+```bash
+npm run test:e2e
+# Expected: All 20 tests pass (phase1 + phase2 + phase3)
+```
+
+**Step 5: Run Playwright HTML report**
+```bash
+npm run test:e2e:report
+# Verify report generated at tests/e2e/playwright-report/index.html
+```
+
+**Step 6: If ANY test fails**
+- Fix the issue
+- Re-run from Step 3
+- Do NOT tag v1.0.0 until all green
+
+---
+
+## Task 19: Final Commit + Tag v1.0.0
 
 **Step 1: Run ALL quality gates**
 ```bash
