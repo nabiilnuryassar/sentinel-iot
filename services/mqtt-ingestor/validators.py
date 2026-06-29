@@ -9,9 +9,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# iot/{building}/{room}/{device_id}/(telemetry|event)
-_TOPIC_RE = re.compile(r"^iot/([^/]+)/([^/]+)/([^/]+)/(telemetry|event)$")
-
+# tenants/{tenant_slug}/iot/{building}/{room}/{device_id}/(telemetry|event)
+# Also supports legacy: iot/{building}/{room}/{device_id}/(telemetry|event)
+_TOPIC_RE = re.compile(r"^(?:tenants/([^/]+)/)?iot/([^/]+)/([^/]+)/([^/]+)/(telemetry|event)$")
 # PRD §12.3 required telemetry payload fields.
 REQUIRED_FIELDS: tuple[str, ...] = ("device_id", "type", "timestamp", "location")
 
@@ -19,19 +19,23 @@ REQUIRED_FIELDS: tuple[str, ...] = ("device_id", "type", "timestamp", "location"
 NUMERIC_FIELDS: tuple[str, ...] = ("temperature", "humidity", "battery", "rssi")
 
 
-def parse_topic(topic: str) -> tuple[str, str, str, str] | None:
-    """Match `iot/{building}/{room}/{device_id}/(telemetry|event)`.
-
-    Returns (building, room, device_id, kind) or None if the topic does not
-    match the contract. `kind` is either "telemetry" or "event".
+def parse_topic(topic: str) -> tuple[str | None, str, str, str, str] | None:
+    """Match topic with optional tenant prefix.
+    
+    Supports both formats:
+    - tenants/{tenant_slug}/iot/{building}/{room}/{device_id}/(telemetry|event)
+    - iot/{building}/{room}/{device_id}/(telemetry|event) [legacy]
+    
+    Returns (tenant_slug, building, room, device_id, kind) or None.
+    tenant_slug is None for legacy topics.
     """
     if not isinstance(topic, str):
         return None
     match = _TOPIC_RE.match(topic)
     if not match:
         return None
-    building, room, device_id, kind = match.groups()
-    return building, room, device_id, kind
+    tenant_slug, building, room, device_id, kind = match.groups()
+    return tenant_slug, building, room, device_id, kind
 
 
 def validate_telemetry(
@@ -57,7 +61,7 @@ def validate_telemetry(
     if parsed is None:
         return False, "invalid_topic"
 
-    _, _, topic_device_id, _ = parsed
+    _, _, _, topic_device_id, _ = parsed
     if topic_device_id != payload["device_id"]:
         return False, "device_spoofing"
 

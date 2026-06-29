@@ -46,8 +46,8 @@ COPY . /var/www/html
 
 # Install PHP deps. --no-scripts because artisan needs a writable .env at boot,
 # which exists at runtime via the bind mount but not necessarily at build time.
-RUN composer install --no-interaction --prefer-dist --no-progress --no-scripts \
-    && chown -R www-data:www-data storage bootstrap/cache
+# composer install skipped — vendor provided via bind mount
+#     && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8000
 

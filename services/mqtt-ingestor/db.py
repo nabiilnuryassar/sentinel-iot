@@ -67,6 +67,21 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def get_tenant_id(tenant_slug: str | None, default_tenant_id: int = 1) -> int | None:
+    """Lookup tenant_id by slug. Falls back to default_tenant_id (1) for legacy topics."""
+    if tenant_slug is None:
+        return default_tenant_id
+    try:
+        pool = get_pool()
+        with pool.connection() as conn, conn.cursor() as cur:
+            cur.execute("SELECT id FROM tenants WHERE slug = %s", (tenant_slug,))
+            row = cur.fetchone()
+            return row[0] if row else None
+    except Exception as exc:  # noqa: BLE001
+        LOG.error("failed to lookup tenant %s: %s", tenant_slug, exc)
+        return None
+
+
 def insert_telemetry(
     device_id: str,
     topic: str,
@@ -77,13 +92,15 @@ def insert_telemetry(
     battery: float | None = None,
     rssi: float | None = None,
     received_at: datetime | None = None,
+    tenant_slug: str | None = None,
 ) -> int:
     """Insert a single row into telemetry_logs and return the new id."""
     received_at = received_at or _now_utc()
+    tenant_id = get_tenant_id(tenant_slug)
     sql = (
         "INSERT INTO telemetry_logs "
-        "(device_id, topic, payload_json, temperature, humidity, battery, rssi, received_at) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
+        "(device_id, topic, payload_json, temperature, humidity, battery, rssi, received_at, tenant_id) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
     )
     pool = get_pool()
     with pool.connection() as conn, conn.cursor() as cur:
@@ -98,6 +115,7 @@ def insert_telemetry(
                 battery,
                 rssi,
                 received_at,
+                tenant_id,
             ),
         )
         row = cur.fetchone()
@@ -112,6 +130,7 @@ def update_device_last_seen(
     type: str | None = None,
     location: str | None = None,
     status: str = "online",
+    tenant_slug: str | None = None,
 ) -> None:
     """UPSERT into devices keyed by device_id.
 
@@ -119,10 +138,11 @@ def update_device_last_seen(
     last_seen_at, status, location, and type are refreshed; name and metadata
     are left intact so manual edits in the dashboard are not overwritten.
     """
+    tenant_id = get_tenant_id(tenant_slug)
     sql = (
         "INSERT INTO devices "
-        "(device_id, name, type, location, status, last_seen_at, created_at, updated_at) "
-        "VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW()) "
+        "(device_id, name, type, location, status, last_seen_at, created_at, updated_at, tenant_id) "
+        "VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW(), %s) "
         "ON CONFLICT (device_id) DO UPDATE SET "
         "  status = EXCLUDED.status, "
         "  last_seen_at = EXCLUDED.last_seen_at, "
@@ -141,6 +161,7 @@ def update_device_last_seen(
                 location,
                 status,
                 last_seen_at,
+                tenant_id,
             ),
         )
 
@@ -154,13 +175,15 @@ def insert_security_event(
     payload_json: dict[str, Any] | None = None,
     description: str | None = None,
     detected_at: datetime | None = None,
+    tenant_slug: str | None = None,
 ) -> int:
     """Insert a single row into security_events and return the new id."""
     detected_at = detected_at or _now_utc()
+    tenant_id = get_tenant_id(tenant_slug)
     sql = (
         "INSERT INTO security_events "
-        "(event_type, severity, source_client_id, topic, payload_json, description, detected_at) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"
+        "(event_type, severity, source_client_id, topic, payload_json, description, detected_at, tenant_id) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
     )
     payload_param = Jsonb(payload_json) if payload_json is not None else None
     pool = get_pool()
@@ -175,6 +198,7 @@ def insert_security_event(
                 payload_param,
                 description,
                 detected_at,
+                tenant_id,
             ),
         )
         row = cur.fetchone()
