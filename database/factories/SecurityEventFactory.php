@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Device;
 use App\Models\SecurityEvent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -30,21 +31,30 @@ class SecurityEventFactory extends Factory
             default => SecurityEvent::SEVERITY_LOW,
         };
 
-        $building = fake()->randomElement(['building-a', 'building-b']);
-        $room = fake()->randomElement(['lab-a', 'lab-b']);
-        $clientId = fake()->randomElement(['temp-sensor-001', 'door-lock-001', 'attacker-client']);
+        $device = Device::inRandomOrder()->first() ?? Device::factory()->create();
 
         return [
+            'tenant_id' => $device->tenant_id,
             'event_type' => $eventType,
             'severity' => $severity,
-            'source_client_id' => $clientId,
-            'topic' => "iot/{$building}/{$room}/{$clientId}/telemetry",
+            'source_client_id' => $device->device_id,
+            'topic' => fake()->text(50),
             'payload_json' => [
                 'raw' => fake()->sentence(),
             ],
             'description' => fake()->sentence(),
             'detected_at' => fake()->dateTimeBetween('-1 day', 'now'),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (SecurityEvent $event) {
+            if (! $event->tenant_id && $event->device) {
+                $event->tenant_id = $event->device->tenant_id;
+                $event->save();
+            }
+        });
     }
 
     public function severity(string $severity): static

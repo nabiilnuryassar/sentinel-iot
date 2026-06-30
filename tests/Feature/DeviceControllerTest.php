@@ -7,7 +7,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 it('lists devices for an authenticated user', function (): void {
     $user = User::factory()->create();
-    Device::factory()->count(3)->create();
+    Device::factory()->count(3)->state(['tenant_id' => $user->tenant_id])->create();
 
     $this->actingAs($user)
         ->get(route('devices.index'))
@@ -20,8 +20,8 @@ it('lists devices for an authenticated user', function (): void {
 
 it('shows a device by its string device_id', function (): void {
     $user = User::factory()->create();
-    $device = Device::factory()->create(['device_id' => 'temp-sensor-test-001']);
-    TelemetryLog::factory()->count(2)->create(['device_id' => $device->device_id]);
+    $device = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['device_id' => 'temp-sensor-test-001']);
+    TelemetryLog::factory()->count(2)->state(['tenant_id' => $user->tenant_id])->create(['device_id' => $device->device_id]);
 
     $this->actingAs($user)
         ->get(route('devices.show', ['device_id' => $device->device_id]))

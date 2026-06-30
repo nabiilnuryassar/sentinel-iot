@@ -107,7 +107,7 @@ export default function IncidentShow({ incident }: IncidentShowProps) {
 
     return (
         <AppLayout>
-            <Head title={`Incident — ${incident.title}`} />
+            <Head title={`Incident · ${incident.title}`} />
             <div className="flex flex-col gap-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
@@ -170,7 +170,7 @@ export default function IncidentShow({ incident }: IncidentShowProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            {incident.summary ?? '—'}
+                            {incident.summary ?? '-'}
                         </CardContent>
                     </Card>
                     <Card className="sentinel-surface border-border/10">
@@ -180,7 +180,7 @@ export default function IncidentShow({ incident }: IncidentShowProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            {incident.root_cause ?? '—'}
+                            {incident.root_cause ?? '-'}
                         </CardContent>
                     </Card>
                     <Card className="sentinel-surface border-border/10">
@@ -190,7 +190,7 @@ export default function IncidentShow({ incident }: IncidentShowProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            {incident.recommendation ?? '—'}
+                            {incident.recommendation ?? '-'}
                         </CardContent>
                     </Card>
                 </div>

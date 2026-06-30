@@ -8,7 +8,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 it('lists incidents for an authenticated user', function (): void {
     $user = User::factory()->create();
-    Incident::factory()->count(3)->create();
+    Incident::factory()->count(3)->state(['tenant_id' => $user->tenant_id])->create();
 
     $this->actingAs($user)
         ->get(route('incidents.index'))
@@ -21,11 +21,11 @@ it('lists incidents for an authenticated user', function (): void {
 
 it('shows an incident with its reports and device', function (): void {
     $user = User::factory()->create();
-    $device = Device::factory()->create(['device_id' => 'temp-sensor-incident-001']);
-    $incident = Incident::factory()->create([
+    $device = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['device_id' => 'temp-sensor-incident-001']);
+    $incident = Incident::factory()->state(['tenant_id' => $user->tenant_id])->create([
         'affected_device_id' => $device->device_id,
     ]);
-    IncidentReport::factory()->for($incident)->create();
+    IncidentReport::factory()->state(['tenant_id' => $user->tenant_id])->for($incident)->create();
 
     $this->actingAs($user)
         ->get(route('incidents.show', $incident))
@@ -40,7 +40,7 @@ it('shows an incident with its reports and device', function (): void {
 
 it('creates an incident with valid input', function (): void {
     $user = User::factory()->create();
-    $device = Device::factory()->create(['device_id' => 'temp-sensor-store-001']);
+    $device = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['device_id' => 'temp-sensor-store-001']);
 
     $this->actingAs($user)
         ->post(route('incidents.store'), [
@@ -57,6 +57,7 @@ it('creates an incident with valid input', function (): void {
         'status' => Incident::STATUS_OPEN,
         'affected_device_id' => $device->device_id,
         'created_by' => $user->id,
+        'tenant_id' => $user->tenant_id,
     ]);
 });
 
@@ -72,7 +73,7 @@ it('rejects an incident missing the title', function (): void {
 
 it('updates an incident status', function (): void {
     $user = User::factory()->create();
-    $incident = Incident::factory()->open()->create();
+    $incident = Incident::factory()->state(['tenant_id' => $user->tenant_id])->open()->create();
 
     $this->actingAs($user)
         ->put(route('incidents.update', $incident), [

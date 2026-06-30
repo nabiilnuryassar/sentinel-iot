@@ -16,9 +16,11 @@ class AgentMessageFactory extends Factory
      */
     public function definition(): array
     {
+        $user = User::query()->inRandomOrder()->first() ?? User::factory()->create();
+
         return [
-            'user_id' => User::query()->inRandomOrder()->value('id')
-                ?? User::factory(),
+            'tenant_id' => $user->tenant_id,
+            'user_id' => $user->id,
             'source' => fake()->randomElement([
                 AgentMessage::SOURCE_WEB,
                 AgentMessage::SOURCE_TELEGRAM,

@@ -28,8 +28,12 @@ from rate_limiter import RateLimiter
 
 LOG = logging.getLogger("sentinel.ingestor")
 
-TELEMETRY_TOPIC = "iot/+/+/+/telemetry"
-EVENT_TOPIC = "iot/+/+/+/event"
+TELEMETRY_TOPIC = "tenants/+/iot/+/+/+/telemetry"
+EVENT_TOPIC = "tenants/+/iot/+/+/+/event"
+
+# Legacy topic support (deprecated, kept for backward compat during migration)
+TELEMETRY_TOPIC_LEGACY = "iot/+/+/+/telemetry"
+EVENT_TOPIC_LEGACY = "iot/+/+/+/event"
 
 # Phase 6 / D7: detect publish floods on a per-topic-device_id partition.
 # >50 messages in 10s → one security_events row, capped at 1 per minute per partition.
@@ -64,6 +68,7 @@ def _record_security_event(
     topic: str | None,
     payload: dict[str, Any] | None,
     description: str,
+    tenant_slug: str | None = None,
 ) -> None:
     """Persist a security event, swallowing DB errors so the loop keeps running."""
     try:
@@ -74,6 +79,7 @@ def _record_security_event(
             payload_json=payload,
             description=description,
             detected_at=_now_utc(),
+            tenant_slug=tenant_slug,
         )
         _log_event(
             logging.WARNING,
@@ -91,6 +97,7 @@ def _handle_telemetry(
     topic: str,
     payload: dict[str, Any],
     device_id: str,
+    tenant_slug: str | None = None,
 ) -> None:
     """Validate + persist a telemetry payload. Emits security events on failure."""
     ok, reason = validators.validate_telemetry(payload, topic)
@@ -122,6 +129,7 @@ def _handle_telemetry(
             topic=topic,
             payload_json=payload,
             received_at=received_at,
+            tenant_slug=tenant_slug,
             **typed,
         )
         db.update_device_last_seen(
@@ -130,6 +138,7 @@ def _handle_telemetry(
             type=payload.get("type"),
             location=payload.get("location"),
             status="online",
+            tenant_slug=tenant_slug,
         )
         _log_event(
             logging.INFO,
@@ -142,7 +151,7 @@ def _handle_telemetry(
         LOG.error("failed to persist telemetry from %s: %s", device_id, exc)
 
 
-def _handle_event(topic: str, payload: dict[str, Any], device_id: str) -> None:
+def _handle_event(topic: str, payload: dict[str, Any], device_id: str, tenant_slug: str | None = None) -> None:
     """Persist a `iot/.../event` message as a generic device_event security row.
 
     PRD §12.3 leaves event semantics open; storing them with low severity keeps
@@ -153,15 +162,23 @@ def _handle_event(topic: str, payload: dict[str, Any], device_id: str) -> None:
         severity="low",
         topic=topic,
         payload=payload,
-        description=f"event from {device_id}",
+        description=f"device event from {device_id}",
+        tenant_slug=tenant_slug,
     )
-
-
 def on_connect(client, userdata, flags, reason_code, properties):  # noqa: ANN001
     if reason_code == 0:
-        client.subscribe([(TELEMETRY_TOPIC, 1), (EVENT_TOPIC, 1)])
+        # Subscribe to both tenant namespace and legacy topics
+        subscriptions = [
+            (TELEMETRY_TOPIC, 1),
+            (EVENT_TOPIC, 1),
+            (TELEMETRY_TOPIC_LEGACY, 1),
+            (EVENT_TOPIC_LEGACY, 1),
+        ]
+        client.subscribe(subscriptions)
         LOG.info(
-            "connected and subscribed: %s, %s", TELEMETRY_TOPIC, EVENT_TOPIC
+            "connected and subscribed: %s, %s, %s, %s",
+            TELEMETRY_TOPIC, EVENT_TOPIC,
+            TELEMETRY_TOPIC_LEGACY, EVENT_TOPIC_LEGACY
         )
     else:
         LOG.error("connect failed: %s", reason_code)
@@ -223,7 +240,7 @@ def on_message(client, userdata, msg):  # noqa: ANN001
         )
         return
 
-    _, _, topic_device_id, kind = parsed
+    tenant_slug, _, _, topic_device_id, kind = parsed
 
     # Flood detection runs before the per-kind handler so a malformed flood is
     # still caught. Detection is observational — we never drop the message.
@@ -239,9 +256,9 @@ def on_message(client, userdata, msg):  # noqa: ANN001
         )
 
     if kind == "telemetry":
-        _handle_telemetry(topic, payload, topic_device_id)
+        _handle_telemetry(topic, payload, topic_device_id, tenant_slug)
     elif kind == "event":
-        _handle_event(topic, payload, topic_device_id)
+        _handle_event(topic, payload, topic_device_id, tenant_slug)
     else:  # defensive — regex restricts kind already
         _record_security_event(
             event_type="invalid_topic",

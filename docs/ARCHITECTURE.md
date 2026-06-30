@@ -172,6 +172,152 @@ already broadcast-shaped.
   the DB and return JSON. Persistence happens in the controller after the
   agent returns.
 
+### AI Agent: Honest Capabilities
+
+The AI agent in Sentinel-IoT is an **LLM orchestrator**, not a custom-trained ML model. Understanding this distinction is critical for setting realistic expectations:
+
+**What the agent does:**
+- Calls 9 PHP tool classes to fetch structured data from PostgreSQL
+- Passes tool results to an external LLM (OpenAI/Anthropic/Gemini) via `laravel/ai` SDK
+- Returns LLM-generated natural language responses with citations to tool data
+
+**What the agent does NOT do:**
+- Train on your specific IoT data patterns
+- Detect zero-day threats or novel attack vectors
+- Learn from past incidents to improve future recommendations
+- Make autonomous decisions (all actions require admin approval)
+- Run inference locally (requires internet connection to LLM provider)
+
+**Anomaly detection is statistical, not ML:**
+The `AnalyzeAnomaly` tool uses simple z-score calculation (μ ± 3σ) on numeric telemetry fields. It will flag obvious outliers but cannot detect:
+- Gradual drift or degradation
+- Multi-device correlation patterns
+- Protocol-level attacks that produce "normal-looking" telemetry
+- Context-dependent anomalies (e.g., temperature spike during maintenance window)
+
+**For production deployment, consider:**
+- Adding custom ML models as additional tools (e.g., `DetectAnomalyWithML`)
+- Integrating threat intelligence feeds (CVE databases, MITRE ATT&CK)
+- Implementing automated response workflows with approval gates
+- Setting up model monitoring and drift detection
+- Budgeting for LLM API costs (estimate $0.01-0.05 per agent interaction)
+
+## Multi-tenant isolation (SaaS ready)
+
+Sentinel-IoT supports multi-tenant deployments where a single instance serves
+multiple organizations (tenants) with strict data isolation.
+
+```mermaid
+flowchart TB
+    subgraph TENANT_A["Tenant: ACME Corp"]
+        U_A["Users (tenant_id=1)"]
+        D_A["Devices (tenant_id=1)"]
+        T_A["Telemetry (tenant_id=1)"]
+        S_A["Security Events (tenant_id=1)"]
+        I_A["Incidents (tenant_id=1)"]
+    end
+
+    subgraph TENANT_B["Tenant: Globex Inc"]
+        U_B["Users (tenant_id=2)"]
+        D_B["Devices (tenant_id=2)"]
+        T_B["Telemetry (tenant_id=2)"]
+        S_B["Security Events (tenant_id=2)"]
+        I_B["Incidents (tenant_id=2)"]
+    end
+
+    subgraph DB["PostgreSQL"]
+        USERS["users table"]
+        DEVICES["devices table"]
+        TELEMETRY["telemetry_logs table"]
+        EVENTS["security_events table"]
+        INCIDENTS["incidents table"]
+    end
+
+    U_A --> USERS
+    U_B --> USERS
+    D_A --> DEVICES
+    D_B --> DEVICES
+    T_A --> TELEMETRY
+    T_B --> TELEMETRY
+    S_A --> EVENTS
+    S_B --> EVENTS
+    I_A --> INCIDENTS
+    I_B --> INCIDENTS
+
+    BELONGS["BelongsToTenant Trait<br/>(Global Scope)"] -.-> USERS
+    BELONGS -.-> DEVICES
+    BELONGS -.-> TELEMETRY
+    BELONGS -.-> EVENTS
+    BELONGS -.-> INCIDENTS
+```
+
+### Data isolation mechanism
+
+All tenant-aware models use the `BelongsToTenant` trait which:
+
+1. **Global scope**: Automatically filters all queries to `WHERE tenant_id = current_user.tenant_id`
+2. **Auto-assignment**: Sets `tenant_id` on model creation via `creating` event
+3. **Relationships**: Ensures related models inherit tenant context
+
+Affected models:
+ `User`, `Device`, `TelemetryLog`, `SecurityEvent`
+ `Incident`, `IncidentReport`, `DevicePolicy`, `AgentMessage`
+
+### AI tools tenant scoping
+
+The AI Agent's tools automatically respect tenant boundaries:
+
+ `GetDeviceStatus` → only sees devices in current tenant
+ `GetRecentTelemetry` → only reads telemetry for tenant's devices
+ `GetOpenIncidents` → only lists tenant's incidents
+ `GetSecurityEvents` → only sees tenant's security events
+ `AnalyzeAnomaly` → analyzes only tenant's telemetry
+ `GenerateIncidentReport` → generates reports only for tenant's incidents
+
+No cross-tenant data leakage is possible through the AI interface.
+
+### MQTT namespace isolation
+
+Each tenant publishes to a unique MQTT topic namespace:
+
+```
+tenants/{tenant_slug}/iot/{building}/{room}/{device_id}/telemetry
+```
+
+Mosquitto ACLs enforce this at the broker level (see `docs/MULTI_TENANT_MQTT.md`).
+
+### Tenant provisioning
+
+```bash
+# Create a new tenant with unique MQTT namespace
+php artisan tenant:provision acme-corp
+
+# Output:
+# Tenant: acme-corp (ID: 1)
+# MQTT Username: acme-corp
+# MQTT Password: [generated]
+# Topic Prefix: tenants/acme-corp/iot/
+```
+
+The Python ingestor extracts `tenant_slug` from MQTT topics and assigns
+`tenant_id` to telemetry/security events automatically.
+
+### Migration strategy
+
+Existing single-tenant deployments can migrate to multi-tenant:
+
+```php
+// database/migrations/2024_01_15_000000_create_multi_tenant_schema.php
+Schema::table('devices', function (Blueprint $table) {
+    $table->foreignId('tenant_id')->nullable()->constrained()->cascadeOnDelete();
+});
+
+// Migrate existing data to "default" tenant
+$defaultTenant = Tenant::create(['name' => 'Default', 'slug' => 'default']);
+Device::query()->update(['tenant_id' => $defaultTenant->id]);
+```
+
+See `docs/MULTI_TENANT_MQTT.md` for MQTT credential management.
 ## Decisions log
 
 See `thoughts/shared/progress/sentinel-iot-progress.md` §6 for the full

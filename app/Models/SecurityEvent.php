@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\SecurityEventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class SecurityEvent extends Model
 {
     /** @use HasFactory<SecurityEventFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     public const UPDATED_AT = null;
 

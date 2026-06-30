@@ -6,7 +6,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 it('lists security events for an authenticated user', function (): void {
     $user = User::factory()->create();
-    SecurityEvent::factory()->count(3)->create();
+    SecurityEvent::factory()->count(3)->state(['tenant_id' => $user->tenant_id])->create();
 
     $this->actingAs($user)
         ->get(route('security-events.index'))
@@ -21,8 +21,8 @@ it('lists security events for an authenticated user', function (): void {
 
 it('filters security events by severity', function (): void {
     $user = User::factory()->create();
-    SecurityEvent::factory()->severity(SecurityEvent::SEVERITY_HIGH)->count(2)->create();
-    SecurityEvent::factory()->severity(SecurityEvent::SEVERITY_LOW)->count(4)->create();
+    SecurityEvent::factory()->severity(SecurityEvent::SEVERITY_HIGH)->count(2)->state(['tenant_id' => $user->tenant_id])->create();
+    SecurityEvent::factory()->severity(SecurityEvent::SEVERITY_LOW)->count(4)->state(['tenant_id' => $user->tenant_id])->create();
 
     $this->actingAs($user)
         ->get(route('security-events.index', ['severity' => 'high']))

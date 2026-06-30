@@ -1,0 +1,124 @@
+# Production — Caddy HTTPS reverse proxy + PHP-FPM Laravel runtime.
+#
+# Usage:
+#   cp .env.production.example .env.production
+#   $EDITOR .env.production
+#   set -a && source .env.production && set +a
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+services:
+  laravel-app:
+    build:
+      context: .
+      dockerfile: docker/laravel.prod.Dockerfile
+    container_name: sentinel-laravel
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan sentinel:health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  laravel-queue:
+    build:
+      context: .
+      dockerfile: docker/laravel.prod.Dockerfile
+    container_name: sentinel-queue
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    command: php artisan queue:work --tries=3 --backoff=10 --max-time=3600
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan queue:status 2>/dev/null | grep -q running || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+
+  laravel-scheduler:
+    build:
+      context: .
+      dockerfile: docker/laravel.prod.Dockerfile
+    container_name: sentinel-scheduler
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        while true; do
+          php artisan schedule:run --no-interaction --quiet 2>/dev/null || true
+          sleep 60
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: sentinel-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,z
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+    depends_on:
+      laravel-app:
+        condition: service_started
+    logging: *default-logging
+
+  postgres:
+    env_file:
+      - .env.production
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-sentinel_iot}
+      POSTGRES_USER: ${DB_USERNAME:-sentinel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    logging: *default-logging
+
+  mqtt-ingestor:
+    env_file:
+      - .env.production
+    logging: *default-logging
+
+  telegram-bot:
+    env_file:
+      - .env.production
+    logging: *default-logging
+
+volumes:
+  caddy_data:
+  caddy_config:

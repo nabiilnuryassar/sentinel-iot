@@ -63,3 +63,12 @@ mosquitto/logs/
 app/app/
 tests/tests/
 database/database/
+
+# Stale build artifacts
+public/.build_stale_root/
+
+# Nested test directories (Playwright sub-run reports)
+tests/e2e/tests/
+
+# Mosquitto generated secrets
+mosquitto/secrets/

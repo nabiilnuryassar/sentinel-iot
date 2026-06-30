@@ -22,7 +22,7 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Sign in — Sentinel-IoT" />
+            <Head title="Sign in · Sentinel-IoT" />
             <div className="sentinel-grid-bg relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-6 text-foreground">
                 <div
                     aria-hidden

@@ -11,16 +11,22 @@ it('returns 401 without a token', function (): void {
 });
 
 it('returns the PRD §14.1 summary shape with correct types', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    // Freeze the clock to midday so the "events today" calendar-day window is
+    // deterministic: relative offsets like subMinutes(10) must not cross the
+    // UTC midnight boundary when the suite happens to run just after 00:00.
+    $this->travelTo(today()->setTime(12, 0));
 
-    Device::factory()->online()->count(3)->create();
-    Device::factory()->offline()->count(2)->create();
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
 
-    SecurityEvent::factory()->count(4)->create([
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->online()->count(3)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->offline()->count(2)->create();
+
+    SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->count(4)->create([
         'detected_at' => now()->subMinutes(10),
     ]);
 
-    Incident::factory()->open()->severity(Incident::SEVERITY_HIGH)->create();
+    Incident::factory()->state(['tenant_id' => $user->tenant_id])->open()->severity(Incident::SEVERITY_HIGH)->create();
 
     $response = $this->getJson(route('api.dashboard.summary'))->assertOk();
 

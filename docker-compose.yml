@@ -1,18 +1,28 @@
 name: sentinel-iot
 
+# Base services shared by dev and prod.  laravel-app lives in the
+# environment-specific files (docker-compose.dev.yml / docker-compose.prod.yml).
+#
+# Usage:
+#   Dev:   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#   Prod:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
 services:
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: sentinel-mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"
+      - "127.0.0.1:1883:1883"
+      - "8883:8883"
     volumes:
       - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/secrets:/mosquitto/secrets:rw
+      - ./mosquitto/certs:/mosquitto/certs:ro
       - ./mosquitto/logs:/mosquitto/log
       - mosquitto_data:/mosquitto/data
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -u sentinel_device -P sentinel_mqtt_password -t iot/healthcheck/ping -m ok || exit 1"]
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -u sentinel_ingestor -P sentinel_ingestor_password -t tenants/healthcheck/security/ping -m ok || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -25,8 +35,6 @@ services:
       POSTGRES_DB: sentinel_iot
       POSTGRES_USER: sentinel
       POSTGRES_PASSWORD: sentinel_password
-    # Host port 5433 -> container 5432 to avoid conflicts with other local Postgres instances.
-    # Inside the compose network, services still connect via host=postgres port=5432.
     ports:
       - "5433:5432"
     volumes:
@@ -36,22 +44,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  laravel-app:
-    build:
-      context: .
-      dockerfile: docker/laravel.Dockerfile
-    container_name: sentinel-laravel
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mosquitto:
-        condition: service_started
 
   mqtt-ingestor:
     build:
@@ -76,8 +68,10 @@ services:
     env_file:
       - .env
     depends_on:
-      laravel-app:
-        condition: service_started
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
     profiles: ["bot"]
 
 volumes:

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\DevicePolicyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DevicePolicy extends Model
 {
     /** @use HasFactory<DevicePolicyFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $guarded = [];
 

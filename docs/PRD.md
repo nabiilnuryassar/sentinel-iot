@@ -553,6 +553,46 @@ Rekomendasi:
 ### Catatan Migrasi
 
 Laravel AI SDK ships migration `agent_conversations` dan `agent_conversation_messages` (untuk conversation memory). Tabel `agent_messages` yang dibuat di Phase 3a tetap dipakai sebagai **dashboard feed / audit log** yang menyimpan satu baris per interaksi user (web, telegram, system) lengkap dengan metadata. Dua tabel ini saling melengkapi: SDK mengelola context window, `agent_messages` mengelola jejak audit yang bisa difilter per source.
+### Keterbatasan dan Honest Claims
+
+Penting untuk memahami apa yang AI Agent **bisa** dan **tidak bisa** lakukan:
+
+#### Yang Bisa Dilakukan AI Agent
+
+1. **Natural Language Interface**: Admin dapat bertanya dalam bahasa natural (Indonesia/Inggris) dan mendapatkan jawaban terstruktur.
+2. **Data Aggregation**: Agent dapat memanggil multiple tools untuk mengumpulkan data dari berbagai tabel (devices, telemetry, security events, incidents) dalam satu percakapan.
+3. **Pattern Recognition via LLM**: Agent menggunakan kemampuan reasoning dari LLM provider (OpenAI GPT-4/Claude/Gemini) untuk mengidentifikasi pola, membuat rekomendasi, dan menulis laporan insiden.
+4. **Conversation Memory**: Agent mengingat konteks percakapan sebelumnya dalam session yang sama berkat `RemembersConversations` trait.
+5. **Multi-Tenant Data Isolation**: Semua query otomatis di-scope ke tenant yang sedang login berkat `BelongsToTenant` trait.
+
+#### Yang **TIDAK** Dilakukan AI Agent
+
+1. **Bukan ML Model Custom**: Agent **tidak** menggunakan machine learning model yang dilatih khusus untuk deteksi anomali IoT. Semua "kecerdasan" berasal dari LLM provider eksternal.
+2. **Anomaly Detection = Statistical Rules**: Tool `AnalyzeAnomaly` menggunakan perhitungan statistik sederhana (mean, standard deviation, z-score > 3σ), bukan neural network atau time-series forecasting.
+3. **Tidak Ada Real-Time Learning**: Agent tidak belajar dari data historis atau memperbaiki akurasi seiring waktu. Setiap query diproses independently oleh LLM.
+4. **Rekomendasi = Best Practices Umum**: Rekomendasi mitigasi berasal dari prompt engineering dan pengetahuan umum LLM tentang IoT security, bukan dari model yang dilatih pada dataset insiden spesifik.
+5. **Ketergantungan pada LLM Provider**: Jika API key tidak diset atau provider down, agent akan fallback ke response dummy atau error. Tidak ada local inference.
+
+#### Implikasi untuk Production
+
+- **Latency**: Setiap interaksi agent memerlukan 1-3 detik untuk round-trip ke LLM provider.
+- **Cost**: Setiap token yang dikirim/diterima dihitung oleh provider. Monitor usage di dashboard OpenAI/Anthropic/Gemini.
+- **Accuracy**: Rekomendasi agent bersifat **saran**, bukan keputusan final. Admin tetap harus memvalidasi sebelum mengambil tindakan kritis.
+- **Hallucination Risk**: Seperti semua LLM, agent bisa menghasilkan informasi yang salah atau tidak relevan. Selalu cross-check dengan data mentah di dashboard.
+
+#### Comparison dengan "Real" AI SOC
+
+Jika membandingkan dengan enterprise Security Operation Center yang menggunakan AI:
+
+| Aspek | Sentinel-IoT | Enterprise AI SOC |
+|-------|--------------|-------------------|
+| Anomaly Detection | Statistical rules (3σ) | ML models (Isolation Forest, LSTM, etc.) |
+| Threat Intelligence | Manual via LLM knowledge | Real-time feeds (MITRE ATT&CK, CVE databases) |
+| Automation | Read-only tools, no actions | Automated response (block IP, quarantine device) |
+| Learning | None | Continuous learning from new incidents |
+| Cost | Pay-per-token LLM API | Fixed infrastructure + ML ops team |
+
+**Kesimpulan**: Sentinel-IoT adalah **prototype edukatif** yang mendemonstrasikan bagaimana LLM dapat diintegrasikan ke dalam IoT monitoring workflow. Untuk production environment dengan ribuan device dan ancaman sophisticated, pertimbangkan solusi seperti Splunk, IBM QRadar, atau custom ML pipeline.
 
 ---
 

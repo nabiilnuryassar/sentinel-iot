@@ -86,7 +86,7 @@ const eventColumns: ColumnDef<DeviceEvent>[] = [
         header: 'Topic',
         cell: ({ row }) => (
             <span className="font-mono text-xs text-muted-foreground">
-                {row.original.topic ?? '—'}
+                {row.original.topic ?? '-'}
             </span>
         ),
     },
@@ -121,7 +121,7 @@ export default function DeviceShow({
 
     return (
         <AppLayout>
-            <Head title={`Device — ${device.device_id}`} />
+            <Head title={`Device · ${device.device_id}`} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/10 pb-4">
                     <div>
@@ -186,7 +186,7 @@ export default function DeviceShow({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm font-medium">
-                            {device.location ?? '—'}
+                            {device.location ?? '-'}
                         </CardContent>
                     </Card>
                     <Card className="sentinel-surface border-border/10">
@@ -209,7 +209,7 @@ export default function DeviceShow({
                 <Card className="sentinel-surface border-border/10">
                     <CardHeader>
                         <CardTitle className="text-base font-semibold">
-                            {label} — last {telemetry.length} samples
+                            {label} - last {telemetry.length} samples
                         </CardTitle>
                         <CardDescription>
                             Latest reading:{' '}

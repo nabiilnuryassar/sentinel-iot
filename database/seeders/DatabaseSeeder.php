@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\Incident;
 use App\Models\SecurityEvent;
 use App\Models\TelemetryLog;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $tenant = Tenant::where('slug', 'default')->firstOrFail();
+
         $admin = User::query()->updateOrCreate(
-            ['email' => 'admin@sentinel.local'],
+            ['email' => 'admin@sentinel.local', 'tenant_id' => $tenant->id],
             [
                 'name' => 'Sentinel Admin',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
+                'tenant_id' => $tenant->id,
             ],
         );
 
@@ -70,7 +74,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($deviceProfiles as $profile) {
             $device = Device::query()->updateOrCreate(
-                ['device_id' => $profile['device_id']],
+                ['device_id' => $profile['device_id'], 'tenant_id' => $tenant->id],
                 [
                     'name' => $profile['name'],
                     'type' => $profile['type'],
@@ -82,28 +86,29 @@ class DatabaseSeeder extends Seeder
                         'building' => explode('/', $profile['location'])[0],
                         'room' => explode('/', $profile['location'])[1],
                     ],
+                    'tenant_id' => $tenant->id,
                 ],
             );
 
             TelemetryLog::factory()
                 ->count(10)
-                ->create(['device_id' => $device->device_id]);
+                ->create(['device_id' => $device->device_id, 'tenant_id' => $tenant->id]);
         }
 
         SecurityEvent::factory()
             ->ofType(SecurityEvent::TYPE_MALFORMED_PAYLOAD)
             ->severity(SecurityEvent::SEVERITY_LOW)
-            ->create(['source_client_id' => 'temp-sensor-001']);
+            ->create(['source_client_id' => 'temp-sensor-001', 'tenant_id' => $tenant->id]);
 
         SecurityEvent::factory()
             ->ofType(SecurityEvent::TYPE_DEVICE_SPOOFING)
             ->severity(SecurityEvent::SEVERITY_MEDIUM)
-            ->create(['source_client_id' => 'door-lock-001']);
+            ->create(['source_client_id' => 'door-lock-001', 'tenant_id' => $tenant->id]);
 
         $criticalEvent = SecurityEvent::factory()
             ->ofType(SecurityEvent::TYPE_UNAUTHORIZED_PUBLISH)
             ->severity(SecurityEvent::SEVERITY_HIGH)
-            ->create(['source_client_id' => 'attacker-client']);
+            ->create(['source_client_id' => 'attacker-client', 'tenant_id' => $tenant->id]);
 
         Incident::factory()
             ->open()
@@ -115,6 +120,7 @@ class DatabaseSeeder extends Seeder
                 'root_cause' => 'Mosquitto ACL rejected the publish; downstream alerting raised an incident.',
                 'recommendation' => 'Confirm broker ACL coverage and rotate device credentials if needed.',
                 'created_by' => $admin->id,
+                'tenant_id' => $tenant->id,
             ]);
     }
 }

@@ -1,7 +1,8 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     Clock3,
     FileText,
+    LogOut,
     Settings,
     ShieldAlert,
     ShieldCheck,
@@ -89,6 +90,14 @@ export function AppSidebar() {
                     </div>
                 </div>
             </div>
+            <button
+                type="button"
+                onClick={() => router.post('/logout')}
+                className="mx-4 mb-4 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-border hover:bg-rose-500/10 hover:text-rose-400"
+            >
+                <LogOut aria-hidden className="size-5" />
+                <span>Log Out</span>
+            </button>
         </aside>
     );
 }

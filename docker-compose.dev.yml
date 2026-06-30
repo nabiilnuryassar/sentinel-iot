@@ -1,0 +1,43 @@
+# Development — hot-reload via Vite HMR + artisan serve.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Vite HMR on http://localhost:5173  (auto-proxies to Laravel on :8000)
+# Laravel on http://localhost:8000
+#
+# Source edits on the host are reflected instantly:
+#   PHP  → artisan serve picks up on next request
+#   JS/CSS → Vite HMR pushes to browser without full reload
+#
+# IMPORTANT: Run `npm install` and `composer install` on the host first.
+# The bind mount shares host's node_modules/ and vendor/ into the container
+# so `npm run dev` and Laravel boot correctly on first start.
+
+services:
+  laravel-app:
+    build:
+      context: .
+      dockerfile: docker/laravel.Dockerfile
+    container_name: sentinel-laravel
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    volumes:
+      - ./:/var/www/html:z
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+    command: >
+      bash -c "
+        npm run dev &
+        php artisan serve --host=0.0.0.0 --port=8000
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started

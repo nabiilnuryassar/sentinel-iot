@@ -1,9 +1,35 @@
-# sentinel_device: publish on iot/#
-user sentinel_device
-topic write iot/#
+# Sentinel-IoT MQTT ACL — per-tenant topic isolation.
+#
+# Topic namespace (multi-tenant SaaS):
+#   tenants/<slug>/iot/<building>/<room>/<device_id>/telemetry
+#   tenants/<slug>/iot/<building>/<room>/<device_id>/event
+#   tenants/<slug>/security/#         (ingestor-written security events)
+#
+# A device principal authenticates with an MQTT username equal to its tenant
+# slug (provisioned by `php artisan tenant:provision`). The `pattern` rules
+# below use Mosquitto's %u substitution so each device user can only publish
+# under its OWN tenant prefix — a leaked credential for tenant "acme" can never
+# write into "globex".
 
-# sentinel_ingestor: subscribe on iot/# and security/#
+# --- Per-tenant device principals (username == tenant slug) ------------------
+# Devices may ONLY publish telemetry/events within their tenant namespace.
+pattern write tenants/%u/iot/#
+
+# --- Central ingestor --------------------------------------------------------
+# The ingestor is the single trusted consumer. It reads every tenant's IoT and
+# security topics and writes derived security events back.
 user sentinel_ingestor
+topic read tenants/+/iot/#
+topic read tenants/+/security/#
+topic write tenants/+/security/#
+# Legacy flat namespace (single-tenant demo / backward compatibility).
 topic read iot/#
 topic read security/#
 topic write security/#
+
+# --- Legacy single-tenant device principal (demo seed only) ------------------
+# Kept so the existing DemoSeeder + attack-simulator continue to work against
+# the flat `iot/#` namespace. Do NOT issue this credential to real clients in a
+# multi-tenant deployment; use per-tenant principals above.
+user sentinel_device
+topic write iot/#

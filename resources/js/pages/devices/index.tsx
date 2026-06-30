@@ -51,7 +51,7 @@ const columns: ColumnDef<DeviceRow>[] = [
         header: 'Location',
         cell: ({ row }) => (
             <span className="text-xs text-muted-foreground">
-                {row.original.location ?? '—'}
+                {row.original.location ?? '-'}
             </span>
         ),
     },

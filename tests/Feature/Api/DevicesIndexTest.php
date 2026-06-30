@@ -9,10 +9,11 @@ it('returns 401 without a token', function (): void {
 });
 
 it('returns paginated DeviceResource collection with token', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
 
-    Device::factory()->online()->count(2)->create();
-    Device::factory()->offline()->count(1)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->online()->count(2)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->offline()->count(1)->create();
 
     $response = $this->getJson(route('api.devices.index'))->assertOk();
 
@@ -28,10 +29,11 @@ it('returns paginated DeviceResource collection with token', function (): void {
 });
 
 it('filters by ?status=online', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
 
-    Device::factory()->online()->count(2)->create();
-    Device::factory()->offline()->count(3)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->online()->count(2)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->offline()->count(3)->create();
 
     $response = $this->getJson(route('api.devices.index', ['status' => 'online']))->assertOk();
 
@@ -43,10 +45,11 @@ it('filters by ?status=online', function (): void {
 });
 
 it('filters by ?status=offline', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
 
-    Device::factory()->online()->count(2)->create();
-    Device::factory()->offline()->count(3)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->online()->count(2)->create();
+    Device::factory()->state(['tenant_id' => $user->tenant_id])->offline()->count(3)->create();
 
     $response = $this->getJson(route('api.devices.index', ['status' => 'offline']))->assertOk();
 

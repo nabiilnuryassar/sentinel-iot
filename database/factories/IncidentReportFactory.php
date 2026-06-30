@@ -16,10 +16,12 @@ class IncidentReportFactory extends Factory
      */
     public function definition(): array
     {
+        $incident = Incident::factory()->create();
         $generatedAt = fake()->dateTimeBetween('-1 day', 'now');
 
         return [
-            'incident_id' => Incident::factory(),
+            'tenant_id' => $incident->tenant_id,
+            'incident_id' => $incident->id,
             'report_markdown' => '# '.fake()->sentence()."\n\n".
                 "## Summary\n\n".fake()->paragraph()."\n\n".
                 "## Root Cause\n\n".fake()->paragraph()."\n\n".
@@ -27,5 +29,15 @@ class IncidentReportFactory extends Factory
             'generated_by' => fake()->randomElement(['agent', 'admin@sentinel.local']),
             'generated_at' => $generatedAt,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (IncidentReport $report) {
+            if ($report->incident) {
+                $report->tenant_id = $report->incident->tenant_id;
+                $report->save();
+            }
+        });
     }
 }

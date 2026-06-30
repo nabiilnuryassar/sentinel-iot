@@ -114,3 +114,23 @@ this. The sidebar collapses below `lg` and the bottom nav takes over.
 - No new color systems — extend `--sentinel-*` if a new accent is needed.
 - No new third-party UI libs without explicit approval.
 - No animations that can't respect `prefers-reduced-motion`.
+
+
+## Multi-tenant UI considerations
+
+Sentinel-IoT supports multi-tenant deployments where users are automatically
+scoped to their tenant. From the UI perspective:
+
+- **No tenant selector needed**: Users belong to exactly one tenant, set at
+  account creation. The `BelongsToTenant` trait on all models ensures data
+  isolation at the backend level.
+- **MQTT topic namespace**: Each tenant has a unique topic prefix
+  (`tenants/{slug}/iot/...`). The UI displays topics as-is; no tenant prefix
+  stripping is needed in the frontend.
+- **AI Agent responses**: The agent only sees tenant-scoped data, so responses
+  are automatically isolated. No UI filtering required.
+- **Empty states**: If a tenant has no devices/telemetry, show the standard
+  empty states — this is expected for new tenants.
+
+See `docs/ARCHITECTURE.md#multi-tenant-isolation` for the backend implementation
+and `docs/MULTI_TENANT_MQTT.md` for MQTT credential management.

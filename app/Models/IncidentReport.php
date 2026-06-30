@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\IncidentReportFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
 class IncidentReport extends Model
 {
     /** @use HasFactory<IncidentReportFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     public const UPDATED_AT = null;
 

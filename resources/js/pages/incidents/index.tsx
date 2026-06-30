@@ -78,7 +78,7 @@ const columns: ColumnDef<IncidentRow>[] = [
         header: 'Device',
         cell: ({ row }) => (
             <span className="font-mono text-xs text-muted-foreground">
-                {row.original.affected_device_id ?? '—'}
+                {row.original.affected_device_id ?? '-'}
             </span>
         ),
     },

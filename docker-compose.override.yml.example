@@ -1,21 +1,10 @@
-# Copy this file to docker-compose.override.yml to enable hot-reload.
-# Compose auto-merges any docker-compose.override.yml on top of docker-compose.yml.
+# DEPRECATED — this file is no longer needed.
 #
-#   cp docker-compose.override.yml.example docker-compose.override.yml
-#   docker compose up -d
-
-services:
-  laravel-app:
-    # Mount the repo over the image's /var/www/html so PHP picks up edits live.
-    # vendor/ and node_modules/ are excluded so they keep using the image's copy.
-    volumes:
-      - ./:/var/www/html
-      - laravel_vendor:/var/www/html/vendor
-      - laravel_node_modules:/var/www/html/node_modules
-    environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-
-volumes:
-  laravel_vendor:
-  laravel_node_modules:
+# The project now uses explicit per-environment compose files:
+#
+#   Dev:   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#   Prod:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# The old `docker-compose.override.yml` auto-merge pattern is retired.
+# See docker-compose.dev.yml for the full development configuration
+# (Vite HMR on :5173, artisan serve on :8000, bind mounts).

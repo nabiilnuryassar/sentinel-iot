@@ -7,12 +7,12 @@ use Laravel\Sanctum\Sanctum;
 it('returns 401 without a token', function (): void {
     $this->getJson(route('api.security-events.index'))->assertUnauthorized();
 });
-
 it('returns paginated SecurityEventResource collection ordered by detected_at desc', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
 
-    $older = SecurityEvent::factory()->create(['detected_at' => now()->subHours(5)]);
-    $newer = SecurityEvent::factory()->create(['detected_at' => now()->subMinutes(5)]);
+    $older = SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->create(['detected_at' => now()->subHours(5)]);
+    $newer = SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->create(['detected_at' => now()->subMinutes(5)]);
 
     $response = $this->getJson(route('api.security-events.index'))->assertOk();
 
@@ -28,12 +28,15 @@ it('returns paginated SecurityEventResource collection ordered by detected_at de
     expect($response->json('data.0.id'))->toBe($newer->id);
     expect($response->json('data.1.id'))->toBe($older->id);
 });
-
 it('filters by ?since=today', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    // Midday freeze keeps the calendar-day boundary deterministic near UTC midnight.
+    $this->travelTo(today()->setTime(12, 0));
 
-    SecurityEvent::factory()->count(2)->create(['detected_at' => now()->subMinutes(30)]);
-    SecurityEvent::factory()->count(3)->create(['detected_at' => now()->subDays(2)]);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
+
+    SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->count(2)->create(['detected_at' => now()->subMinutes(30)]);
+    SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->count(3)->create(['detected_at' => now()->subDays(2)]);
 
     $response = $this->getJson(route('api.security-events.index', ['since' => 'today']))->assertOk();
 
@@ -41,10 +44,13 @@ it('filters by ?since=today', function (): void {
 });
 
 it('filters by ?since=24h', function (): void {
-    Sanctum::actingAs(User::factory()->create(), ['*']);
+    $this->travelTo(today()->setTime(12, 0));
 
-    SecurityEvent::factory()->count(2)->create(['detected_at' => now()->subHours(6)]);
-    SecurityEvent::factory()->count(3)->create(['detected_at' => now()->subDays(3)]);
+    $user = User::factory()->create();
+    Sanctum::actingAs($user, ['*']);
+
+    SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->count(2)->create(['detected_at' => now()->subHours(6)]);
+    SecurityEvent::factory()->state(['tenant_id' => $user->tenant_id])->count(3)->create(['detected_at' => now()->subDays(3)]);
 
     $response = $this->getJson(route('api.security-events.index', ['since' => '24h']))->assertOk();
 

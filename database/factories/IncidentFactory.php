@@ -16,7 +16,10 @@ class IncidentFactory extends Factory
      */
     public function definition(): array
     {
+        $user = User::query()->inRandomOrder()->first() ?? User::factory()->create();
+
         return [
+            'tenant_id' => $user->tenant_id,
             'title' => 'Incident: '.fake()->sentence(4),
             'severity' => fake()->randomElement([
                 Incident::SEVERITY_LOW,
@@ -39,8 +42,7 @@ class IncidentFactory extends Factory
             'summary' => fake()->paragraph(),
             'root_cause' => fake()->paragraph(),
             'recommendation' => fake()->paragraph(),
-            'created_by' => User::query()->inRandomOrder()->value('id')
-                ?? User::factory(),
+            'created_by' => $user->id,
         ];
     }
 

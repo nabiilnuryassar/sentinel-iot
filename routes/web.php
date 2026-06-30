@@ -14,7 +14,7 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])
@@ -37,6 +37,6 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('/incidents/{incident}/generate-report', [IncidentController::class, 'generateReport'])->name('incidents.generate-report');
 
     Route::get('/agent', [AgentController::class, 'index'])->name('agent.index');
-    Route::post('/agent/ask', [AgentController::class, 'ask'])->name('agent.ask');
-    Route::post('/agent/stream', [AgentController::class, 'stream'])->name('agent.stream');
+    Route::post('/agent/ask', [AgentController::class, 'ask'])->name('agent.ask')->middleware('throttle:10,1');
+    Route::post('/agent/stream', [AgentController::class, 'stream'])->name('agent.stream')->middleware('throttle:10,1');
 });

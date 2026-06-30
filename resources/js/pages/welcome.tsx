@@ -16,8 +16,11 @@ import {
     Zap,
 } from 'lucide-react';
 import { FeatureCard } from '@/components/landing/feature-card';
-import { MetricTicker } from '@/components/landing/metric-ticker';
+import { RevealStagger, RevealItem } from '@/components/scroll-reveal';
+import { GlobeHero } from '@/components/ui/globe-hero';
+import { motion, useReducedMotion } from 'motion/react';
 
+import { ContainerScroll } from '@/components/ui/container-scroll-animation';
 const STACK_BADGES = [
     'Laravel 13',
     'React 19',
@@ -31,23 +34,16 @@ const STACK_BADGES = [
 ];
 
 export default function Welcome() {
+    const reduce = useReducedMotion();
     return (
         <>
-            <Head title="Sentinel-IoT — IoT Security Operations Center" />
+            <Head title="Sentinel-IoT · IoT Security Operations Center" />
 
-            <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+            <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
                 {/* Ambient glow + grid */}
                 <div
                     aria-hidden
                     className="sentinel-grid-bg pointer-events-none absolute inset-0 opacity-60"
-                />
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute -top-24 left-1/2 size-[40rem] -translate-x-1/2 rounded-full bg-sentinel-teal/10 blur-3xl"
-                />
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute right-0 top-1/3 size-[28rem] rounded-full bg-sentinel-purple/10 blur-3xl"
                 />
 
                 {/* Top nav */}
@@ -76,107 +72,185 @@ export default function Welcome() {
                         </Link>
                     </div>
                 </header>
-
                 {/* Hero */}
-                <section className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8 lg:pb-24 lg:pt-16">
-                    <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
-                        <div className="flex-1">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-sentinel-teal/30 bg-sentinel-teal/8 px-3 py-1 text-xs font-medium text-sentinel-teal">
-                                <span className="relative flex size-2">
-                                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-sentinel-teal opacity-60" />
-                                    <span className="relative inline-flex size-2 rounded-full bg-sentinel-teal" />
-                                </span>
-                                <span className="font-mono uppercase tracking-[0.18em]">
-                                    Live SOC · v1.0
-                                </span>
-                            </div>
-
-                            <h1 className="mt-6 font-mono text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                                Defend every
-                                <br />
-                                <span className="bg-linear-to-r from-sentinel-teal via-sentinel-cyan to-sentinel-purple bg-clip-text text-transparent [text-shadow:0_0_40px_rgba(31,230,208,0.25)]">
-                                    connected device.
-                                </span>
-                            </h1>
-
-                            <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                                Sentinel-IoT is an autonomous Security
-                                Operations Center for IoT fleets. Stream
-                                telemetry, detect anomalies, audit MQTT
-                                traffic, and resolve incidents through an AI
-                                co-pilot — all in one neon-lit console.
-                            </p>
-
-                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                                <Link
-                                    href="/login"
-                                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-sentinel-teal px-5 py-3 text-sm font-semibold text-[#020617] shadow-[0_0_28px_rgba(31,230,208,0.35)] transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sentinel-teal focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                                >
-                                    Enter Console
-                                    <ArrowRight
-                                        aria-hidden
-                                        className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                                    />
-                                </Link>
-                                <a
-                                    href="https://github.com"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card/40 px-5 py-3 text-sm font-medium text-foreground transition-colors duration-200 hover:border-sentinel-cyan/40 hover:text-sentinel-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sentinel-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                                >
-                                    <Code2 aria-hidden className="size-4" />
-                                    Source
-                                </a>
-                            </div>
-
-                            {/* Live ticker */}
-                            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
-                                <MetricTicker label="Devices monitored" target={1102} />
-                                <MetricTicker label="Threats blocked" target={428} />
-                                <MetricTicker label="MQTT events / day" target={184230} />
-                                <MetricTicker label="Uptime" target={99.97} suffix="%" />
-                            </div>
-                        </div>
-
-                        {/* Hero terminal panel */}
-                        <div
-                            aria-hidden
-                            className="sentinel-surface relative w-full max-w-md rounded-2xl p-5 lg:w-[28rem] lg:flex-shrink-0"
-                        >
-                            <div className="flex items-center gap-2">
-                                <span className="size-2.5 rounded-full bg-sentinel-red/80" />
-                                <span className="size-2.5 rounded-full bg-sentinel-amber/80" />
-                                <span className="size-2.5 rounded-full bg-sentinel-emerald/80" />
-                                <span className="ml-3 font-mono text-xs text-muted-foreground">
-                                    sentinel://soc/live
-                                </span>
-                            </div>
-                            <div className="mt-4 space-y-2 font-mono text-xs leading-relaxed">
-                                <p className="text-muted-foreground">
-                                    <span className="text-sentinel-teal">$</span> sentinel
-                                    watch --live
-                                </p>
-                                <p className="text-sentinel-cyan">
-                                    [09:41] anomaly@temp-sensor-001 → spike +312%
-                                </p>
-                                <p className="text-sentinel-amber">
-                                    [09:41] mqtt.audit → unauthorized-publish blocked
-                                </p>
-                                <p className="text-sentinel-purple">
-                                    [09:41] agent.recommend → isolate device
-                                </p>
-                                <p className="text-sentinel-emerald">
-                                    [09:42] incident:INC-0519-007 → contained ✓
-                                </p>
-                                <p className="text-muted-foreground">
-                                    <span className="text-sentinel-teal animate-pulse">
-                                        ▮
-                                    </span>{' '}
-                                    streaming…
-                                </p>
-                            </div>
-                        </div>
+                <GlobeHero
+                  rotationSpeed={0.004}
+                  className="relative"
+                >
+                  {/* Terminal panel — decorative overlay */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-8 right-8 z-20 hidden w-80 rounded-2xl bg-card/20 p-4 backdrop-blur-xl lg:block"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="size-2.5 rounded-full bg-sentinel-red/80" />
+                      <span className="size-2.5 rounded-full bg-sentinel-amber/80" />
+                      <span className="size-2.5 rounded-full bg-sentinel-emerald/80" />
+                      <span className="ml-3 font-mono text-xs text-muted-foreground">
+                        sentinel://soc/live
+                      </span>
                     </div>
+                    <div className="mt-4 space-y-2 font-mono text-xs leading-relaxed">
+                      <p className="text-muted-foreground">
+                        <span className="text-sentinel-teal">$</span> sentinel watch --live
+                      </p>
+                      <p className="text-sentinel-cyan">
+                        [09:41] anomaly@temp-sensor-001 → spike +312%
+                      </p>
+                      <p className="text-sentinel-amber">
+                        [09:41] mqtt.audit → unauthorized-publish blocked
+                      </p>
+                      <p className="text-sentinel-purple">
+                        [09:41] agent.recommend → isolate device
+                      </p>
+                      <p className="text-sentinel-emerald">
+                        [09:42] incident:INC-0519-007 → contained ✓
+                      </p>
+                      <p className="text-muted-foreground">
+                        <span className="text-sentinel-teal motion-safe:animate-pulse">_</span>
+                        {' '}streaming…
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Content block */}
+                  <div className="relative z-10 mx-auto w-full max-w-5xl space-y-10 px-6 text-center">
+                    <motion.div
+                      initial={reduce ? false : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8 }}
+                      className="space-y-8"
+                    >
+                      {/* Status pill */}
+                      <motion.div
+                        initial={reduce ? false : { opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="relative inline-flex items-center gap-3 rounded-full border border-sentinel-teal/30 bg-sentinel-teal/8 px-6 py-3 backdrop-blur-xl"
+                      >
+                        <div className="size-2 motion-safe:animate-ping rounded-full bg-sentinel-teal" />
+                        <span className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-sentinel-teal">
+                          Live · operational
+                        </span>
+                        <div className="size-2 motion-safe:animate-ping rounded-full bg-sentinel-teal animation-delay-500" />
+                      </motion.div>
+
+                      {/* Headline */}
+                      <motion.h1
+                        initial={reduce ? false : { opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                        className="font-mono text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl"
+                      >
+                        <span className="block text-3xl font-light text-foreground/70 sm:text-4xl lg:text-5xl">
+                          Defend every
+                        </span>
+                        <span className="relative block">
+                          <span className="relative z-10 bg-linear-to-r from-sentinel-teal via-sentinel-cyan to-sentinel-purple bg-clip-text text-transparent">
+                            connected device.
+                          </span>
+                          <span
+                            aria-hidden
+                            className="absolute inset-0 scale-105 bg-linear-to-r from-sentinel-teal via-sentinel-cyan to-sentinel-purple bg-clip-text text-transparent opacity-50 blur-2xl"
+                          >
+                            connected device.
+                          </span>
+                        </span>
+                      </motion.h1>
+
+                      {/* Subtext */}
+                      <motion.div
+                        initial={reduce ? false : { opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                        className="mx-auto max-w-2xl"
+                      >
+                        <p className="text-lg font-medium leading-relaxed text-muted-foreground sm:text-xl">
+                          An autonomous Security Operations Center for IoT fleets.
+                          Stream telemetry, detect anomalies, audit MQTT traffic,
+                          and resolve incidents through an AI co-pilot.
+                        </p>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* CTAs */}
+                    <motion.div
+                      initial={reduce ? false : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 1 }}
+                      className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
+                    >
+                      <Link
+                        href="/login"
+                        className="group inline-flex items-center gap-2 rounded-xl bg-sentinel-teal px-5 py-3 text-sm font-semibold text-[#020617] shadow-[0_0_28px_rgba(31,230,208,0.35)] transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sentinel-teal focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-8 sm:py-4 sm:text-base"
+                      >
+                        <span>Enter Console</span>
+                        <ArrowRight aria-hidden className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      </Link>
+                      <a
+                        href="https://github.com/nabiilnuryassar/sentinel-iot"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group inline-flex items-center gap-2 rounded-xl border border-border/40 bg-card/40 px-5 py-3 text-sm font-medium text-foreground backdrop-blur-xl transition-all duration-200 hover:border-sentinel-cyan/40 hover:text-sentinel-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sentinel-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-8 sm:py-4 sm:text-base"
+                      >
+                        <Code2 aria-hidden className="size-4" />
+                        <span>Source</span>
+                      </a>
+                    </motion.div>
+
+                    {/* Live metric ticker */}
+                    <motion.div
+                      initial={reduce ? false : { opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 1.4 }}
+                      className="mx-auto flex max-w-lg flex-wrap items-center justify-center gap-x-6 gap-y-3 font-mono text-xs text-muted-foreground sm:gap-x-10"
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-sentinel-emerald" />
+                        1,102 devices
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-sentinel-teal" />
+                        428 threats blocked
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-sentinel-cyan" />
+                        184k events/day
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-sentinel-purple" />
+                        99.97% uptime
+                      </span>
+                    </motion.div>
+                  </div>
+                </GlobeHero>
+
+                {/* Dashboard Demo, scroll-animated mockup */}
+                <section className="relative z-10">
+                    <ContainerScroll
+                        titleComponent={
+                            <>
+                                <p className="font-mono text-xs uppercase tracking-[0.22em] text-sentinel-teal">
+                                    // the console
+                                </p>
+                                <h2 className="mt-4 font-mono text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+                                    One dashboard.
+                                    <br />
+                                    <span className="bg-linear-to-r from-sentinel-teal via-sentinel-cyan to-sentinel-purple bg-clip-text text-transparent">
+                                        Every device in your fleet.
+                                    </span>
+                                </h2>
+                            </>
+                        }
+                    >
+                        <img
+                            src="/images/dashboard-demo.png"
+                            alt="Sentinel-IoT dashboard showing live device telemetry, threat feed, and incident panel"
+                            className="mx-auto h-full w-full object-cover object-left-top"
+                            draggable={false}
+                            loading="lazy"
+                        />
+                    </ContainerScroll>
                 </section>
 
                 {/* Features bento */}
@@ -194,46 +268,60 @@ export default function Welcome() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <FeatureCard
-                            icon={BrainCircuit}
-                            title="AI Agent ChatOps"
-                            desc="Streamed-token AI co-pilot. Triage incidents, query telemetry, generate post-mortems — all in chat."
-                            accent="purple"
-                            span="sm:col-span-2"
-                        />
-                        <FeatureCard
-                            icon={Activity}
-                            title="Anomaly Detection"
-                            desc="Statistical + rule-based engine over real-time telemetry. Flags drift before it becomes an incident."
-                            accent="teal"
-                        />
-                        <FeatureCard
-                            icon={RadioTower}
-                            title="MQTT Broker Audit"
-                            desc="Per-topic ACL inspection, unauthorized publish detection, credential rotation alerts."
-                            accent="cyan"
-                        />
-                        <FeatureCard
-                            icon={LineChart}
-                            title="Telemetry Dashboard"
-                            desc="Per-device time-series with neon-lit charts and drill-down to the originating MQTT message."
-                            accent="emerald"
-                        />
-                        <FeatureCard
-                            icon={AlertTriangle}
-                            title="Incident Workflow"
-                            desc="Open → investigate → contain → report. Auto-generated incident reports with AI summary."
-                            accent="amber"
-                            span="sm:col-span-2"
-                        />
-                        <FeatureCard
-                            icon={Cpu}
-                            title="Device Management"
-                            desc="Inventory, fleet health, per-device policy. Quarantine on demand from any view."
-                            accent="red"
-                        />
-                    </div>
+                    <RevealStagger>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={BrainCircuit}
+                                    title="AI Agent ChatOps"
+                                    desc="Streamed-token AI co-pilot. Triage incidents, query telemetry, generate post-mortems, all in chat."
+                                    accent="purple"
+                                    span="sm:col-span-2"
+                                />
+                            </RevealItem>
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={Activity}
+                                    title="Anomaly Detection"
+                                    desc="Statistical + rule-based engine over real-time telemetry. Flags drift before it becomes an incident."
+                                    accent="teal"
+                                />
+                            </RevealItem>
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={RadioTower}
+                                    title="MQTT Broker Audit"
+                                    desc="Per-topic ACL inspection, unauthorized publish detection, credential rotation alerts."
+                                    accent="cyan"
+                                />
+                            </RevealItem>
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={LineChart}
+                                    title="Telemetry Dashboard"
+                                    desc="Per-device time-series with neon-lit charts and drill-down to the originating MQTT message."
+                                    accent="emerald"
+                                />
+                            </RevealItem>
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={AlertTriangle}
+                                    title="Incident Workflow"
+                                    desc="Open → investigate → contain → report. Auto-generated incident reports with AI summary."
+                                    accent="amber"
+                                    span="sm:col-span-2"
+                                />
+                            </RevealItem>
+                            <RevealItem>
+                                <FeatureCard
+                                    icon={Cpu}
+                                    title="Device Management"
+                                    desc="Inventory, fleet health, per-device policy. Quarantine on demand from any view."
+                                    accent="red"
+                                />
+                            </RevealItem>
+                        </div>
+                    </RevealStagger>
                 </section>
 
                 {/* Architecture strip */}
@@ -336,7 +424,7 @@ export default function Welcome() {
                 <footer className="relative z-10 border-t border-border/60">
                     <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                         <p className="font-mono">
-                            © Sentinel-IoT — Built for IoT security teams.
+                            © Sentinel-IoT · Built for IoT security teams.
                         </p>
                         <div className="flex items-center gap-4 font-mono">
                             <span className="inline-flex items-center gap-1.5">

@@ -2,7 +2,7 @@ import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
 export function formatDateTime(iso: string | null | undefined): string {
     if (!iso) {
-        return '—';
+        return '-';
     }
 
     try {
@@ -14,7 +14,7 @@ export function formatDateTime(iso: string | null | undefined): string {
 
 export function formatRelative(iso: string | null | undefined): string {
     if (!iso) {
-        return '—';
+        return '-';
     }
 
     try {
@@ -29,7 +29,7 @@ export function formatNumber(
     fractionDigits = 2,
 ): string {
     if (value === null || value === undefined || Number.isNaN(value)) {
-        return '—';
+        return '-';
     }
 
     return Number(value).toLocaleString(undefined, {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\TelemetryLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class TelemetryLog extends Model
 {
     /** @use HasFactory<TelemetryLogFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     /**
      * Telemetry rows are inserted by the Python ingestor. We disable

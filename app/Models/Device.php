@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\DeviceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class Device extends Model
 {
     /** @use HasFactory<DeviceFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     public const STATUS_ONLINE = 'online';
 

@@ -7,6 +7,9 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    resolve: {
+        dedupe: ['react', 'react-dom', '@react-three/fiber'],
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
@@ -28,4 +31,15 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: 'localhost',
+            clientPort: 5173,
+        },
+        watch: {
+            usePolling: true,
+        },
+    },
 });

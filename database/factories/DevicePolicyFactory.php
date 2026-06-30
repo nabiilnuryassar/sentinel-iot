@@ -16,13 +16,13 @@ class DevicePolicyFactory extends Factory
      */
     public function definition(): array
     {
-        $deviceId = Device::query()->inRandomOrder()->value('device_id')
-            ?? Device::factory()->create()->device_id;
+        $device = Device::query()->inRandomOrder()->first() ?? Device::factory()->create();
 
         return [
-            'device_id' => $deviceId,
-            'allowed_client_id' => $deviceId,
-            'allowed_topic' => "iot/+/+/{$deviceId}/#",
+            'tenant_id' => $device->tenant_id,
+            'device_id' => $device->device_id,
+            'allowed_client_id' => $device->device_id,
+            'allowed_topic' => "iot/+/+/{$device->device_id}/#",
             'can_publish' => true,
             'can_subscribe' => false,
             'is_active' => true,

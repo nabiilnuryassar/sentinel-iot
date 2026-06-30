@@ -314,7 +314,7 @@ return prev;
             <div className="flex min-h-[calc(100vh-7rem)] flex-col gap-4 lg:gap-5">
                 <PageHeader
                     title="AI Agent / ChatOps"
-                    subtitle="OpenClaw — Hermes-style Agent"
+                    subtitle="OpenClaw · Hermes-style Agent"
                     actions={<StatusPill status="online" />}
                 />
 
@@ -361,7 +361,7 @@ return prev;
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 onKeyDown={onKeyDown}
-                                placeholder="Ask the agent — Shift+Enter for newline"
+                                placeholder="Ask the agent (Shift+Enter for newline)"
                                 rows={2}
                                 maxLength={2000}
                                 disabled={streaming}

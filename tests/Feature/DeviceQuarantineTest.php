@@ -12,7 +12,7 @@ it('requires authentication to quarantine a device', function (): void {
 
 it('toggles a device status from offline to quarantined', function (): void {
     $user = User::factory()->create();
-    $device = Device::factory()->create(['status' => 'offline']);
+    $device = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['status' => 'offline']);
 
     $response = $this->actingAs($user)
         ->from(route('devices.show', ['device_id' => $device->device_id]))
@@ -26,7 +26,7 @@ it('toggles a device status from offline to quarantined', function (): void {
 
 it('toggles a device status from quarantined to offline', function (): void {
     $user = User::factory()->create();
-    $device = Device::factory()->create(['status' => 'quarantined']);
+    $device = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['status' => 'quarantined']);
 
     $response = $this->actingAs($user)
         ->from(route('devices.show', ['device_id' => $device->device_id]))

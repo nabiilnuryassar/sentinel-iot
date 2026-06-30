@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Device;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,7 @@ class DeviceFactory extends Factory
         $room = fake()->randomElement(['lab-a', 'lab-b', 'office', 'lobby', 'server-room']);
 
         return [
+            'tenant_id' => Tenant::factory(),
             'device_id' => str_replace('_', '-', $type).'-'.fake()->unique()->numberBetween(100, 999),
             'name' => fake()->words(2, true),
             'type' => $type,

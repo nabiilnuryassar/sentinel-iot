@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Database\Factories\IncidentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Incident extends Model
 {
     /** @use HasFactory<IncidentFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     public const SEVERITY_LOW = 'low';
 

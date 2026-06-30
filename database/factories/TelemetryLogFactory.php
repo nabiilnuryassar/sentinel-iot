@@ -16,13 +16,13 @@ class TelemetryLogFactory extends Factory
      */
     public function definition(): array
     {
-        $deviceId = Device::query()->inRandomOrder()->value('device_id')
-            ?? Device::factory()->create()->device_id;
+        $device = Device::query()->inRandomOrder()->first()
+            ?? Device::factory()->create();
 
         $receivedAt = fake()->dateTimeBetween('-1 hour', 'now');
         $building = fake()->randomElement(['building-a', 'building-b', 'building-c']);
         $room = fake()->randomElement(['lab-a', 'lab-b', 'office']);
-        $topic = "iot/{$building}/{$room}/{$deviceId}/telemetry";
+        $topic = "iot/{$building}/{$room}/{$device->device_id}/telemetry";
 
         $temperature = fake()->randomFloat(2, 18, 32);
         $humidity = fake()->randomFloat(2, 30, 80);
@@ -30,10 +30,11 @@ class TelemetryLogFactory extends Factory
         $rssi = fake()->numberBetween(-90, -40);
 
         return [
-            'device_id' => $deviceId,
+            'tenant_id' => $device->tenant_id,
+            'device_id' => $device->device_id,
             'topic' => $topic,
             'payload_json' => [
-                'device_id' => $deviceId,
+                'device_id' => $device->device_id,
                 'type' => 'telemetry',
                 'timestamp' => $receivedAt->format(DATE_ATOM),
                 'location' => "{$building}/{$room}",

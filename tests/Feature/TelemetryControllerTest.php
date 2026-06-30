@@ -7,8 +7,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 it('paginates the telemetry log for an authenticated user', function (): void {
     $user = User::factory()->create();
-    Device::factory()->count(2)->create();
-    TelemetryLog::factory()->count(5)->create();
+    Device::factory()->count(2)->state(['tenant_id' => $user->tenant_id])->create();
+    TelemetryLog::factory()->count(5)->state(['tenant_id' => $user->tenant_id])->create();
 
     $this->actingAs($user)
         ->get(route('telemetry.index'))
@@ -23,11 +23,11 @@ it('paginates the telemetry log for an authenticated user', function (): void {
 
 it('filters telemetry by device_id', function (): void {
     $user = User::factory()->create();
-    $kept = Device::factory()->create(['device_id' => 'temp-sensor-keep-001']);
-    $other = Device::factory()->create(['device_id' => 'temp-sensor-other-001']);
+    $kept = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['device_id' => 'temp-sensor-keep-001']);
+    $other = Device::factory()->state(['tenant_id' => $user->tenant_id])->create(['device_id' => 'temp-sensor-other-001']);
 
-    TelemetryLog::factory()->count(2)->create(['device_id' => $kept->device_id]);
-    TelemetryLog::factory()->count(3)->create(['device_id' => $other->device_id]);
+    TelemetryLog::factory()->count(2)->state(['tenant_id' => $user->tenant_id])->create(['device_id' => $kept->device_id]);
+    TelemetryLog::factory()->count(3)->state(['tenant_id' => $user->tenant_id])->create(['device_id' => $other->device_id]);
 
     $this->actingAs($user)
         ->get(route('telemetry.index', ['device_id' => $kept->device_id]))

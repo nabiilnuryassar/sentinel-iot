@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuditAdminActions;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            AuditAdminActions::class,
         ]);
 
         // Default Laravel 11+ wiring calls route('login') for unauthenticated

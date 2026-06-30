@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Events\AgentMessageCompleted;
 use App\Listeners\LogAgentMessageCompletion;
+use App\Storage\TenantAwareConversationStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Ai\Contracts\ConversationStore;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ConversationStore::class, fn () => new TenantAwareConversationStore(
+            config('ai.conversations.connection'),
+        ));
     }
 
     /**

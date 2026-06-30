@@ -265,7 +265,7 @@ const columns: ColumnDef<SecurityEventRow>[] = [
         header: 'Source',
         cell: ({ row }) => (
             <span className="font-mono text-xs text-muted-foreground">
-                {row.original.source_client_id ?? '—'}
+                {row.original.source_client_id ?? '-'}
             </span>
         ),
     },
@@ -274,7 +274,7 @@ const columns: ColumnDef<SecurityEventRow>[] = [
         header: 'Topic',
         cell: ({ row }) => (
             <span className="font-mono text-xs text-muted-foreground">
-                {row.original.topic ?? '—'}
+                {row.original.topic ?? '-'}
             </span>
         ),
     },
@@ -282,7 +282,7 @@ const columns: ColumnDef<SecurityEventRow>[] = [
         accessorKey: 'description',
         header: 'Description',
         cell: ({ row }) => (
-            <span className="text-xs">{row.original.description ?? '—'}</span>
+            <span className="text-xs">{row.original.description ?? '-'}</span>
         ),
     },
     {
