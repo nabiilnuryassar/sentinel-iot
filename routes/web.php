@@ -14,7 +14,7 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:20,1');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])
