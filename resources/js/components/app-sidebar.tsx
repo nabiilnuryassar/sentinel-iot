@@ -23,8 +23,8 @@ export function AppSidebar() {
     return (
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[16.25rem] flex-col border-r border-border bg-sidebar/95 lg:flex">
             <div className="flex h-24 items-center gap-3 border-b border-border px-5">
-                <div className="flex size-12 items-center justify-center overflow-hidden rounded-2xl border border-primary/40 bg-primary/10 shadow-[0_0_24px_rgba(31,230,208,0.18)]">
-                    <img src="/images/sentinel-logo.svg" alt="Sentinel-IoT" className="size-10 object-contain" />
+                <div className="flex size-14 items-center justify-center overflow-hidden rounded-2xl bg-primary/10 shadow-[0_0_24px_rgba(31,230,208,0.18)]">
+                    <img src="/images/sentinel-logo.svg" alt="Sentinel-IoT" className="size-13 object-contain" />
                 </div>
                 <div>
                     <span className="block text-xl font-semibold tracking-tight text-foreground">
