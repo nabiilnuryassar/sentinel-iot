@@ -31,11 +31,13 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
-    command: >
-      bash -c "
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        php artisan migrate --force --no-interaction 2>/dev/null || true
+        php artisan db:seed --force --no-interaction 2>/dev/null || true
         npm run dev &
         php artisan serve --host=0.0.0.0 --port=8000
-      "
     depends_on:
       postgres:
         condition: service_healthy
