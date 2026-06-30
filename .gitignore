@@ -11,6 +11,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+
+# Mosquitto TLS material — keep secrets out of git, but keep .gitkeep tracked.
+/mosquitto/certs/*
+!/mosquitto/certs/.gitkeep
+/mosquitto/logs/*.log
 .env
 .env.backup
 .env.production
@@ -26,3 +31,35 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# pnpm store
+.pnpm-store/
+
+# Wokwi build artifacts
+wokwi/*/.build/
+wokwi/*/build/
+
+# Playwright artifacts
+test-results/
+tests/e2e/playwright-report/
+
+# Python bytecode
+__pycache__/
+
+# Skill directories
+.agents/
+.pi/
+skills-lock.json
+
+# Auto-generated diagram files
+diagram.json
+libraries.txt
+wokwi.toml
+
+# Mosquitto runtime logs
+mosquitto/logs/
+
+# Duplicate nested dirs from Laravel 11 migration
+app/app/
+tests/tests/
+database/database/
