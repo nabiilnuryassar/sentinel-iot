@@ -88,6 +88,12 @@ class SentinelApiClient:
             params={"status": "open", "per_page": per_page},
         )
 
+    async def list_security_events(self, *, per_page: int = 10) -> dict[str, Any]:
+        return await self._get(
+            "/api/security-events",
+            params={"per_page": per_page},
+        )
+
     async def agent_ask(self, prompt: str) -> dict[str, Any]:
         return await self._post("/api/agent/ask", {"prompt": prompt})
 

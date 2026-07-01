@@ -37,6 +37,11 @@ class IncidentAnalyst implements Agent, HasMiddleware, HasStructuredOutput, HasT
 {
     use Promptable;
 
+    public function model(): string
+    {
+        return config('ai.providers.openai.models.text.default', 'cx/gpt-5.5');
+    }
+
     public function instructions(): Stringable|string
     {
         return file_get_contents(resource_path('ai/prompts/incident-analyst.md'));

@@ -1,142 +1,226 @@
-# Sentinel-IoT
+<p align="center">
+  <img src="public/images/sentinel-logo.svg" alt="Sentinel-IoT Logo" width="120">
+</p>
 
-AI Agent-Based IoT Security Operation Center with Telegram ChatOps for a
-virtual MQTT infrastructure.
+<h1 align="center">Sentinel-IoT</h1>
 
-## What this is
+<p align="center">
+  <strong>AI Agent-Based Security Operations Center for IoT Infrastructure</strong>
+</p>
 
-Sentinel-IoT is a Laravel + React dashboard that monitors a fleet of virtual
-IoT devices over MQTT, detects malformed / unauthorized / spoofed traffic via
-a Python ingestor, and uses an in-process Laravel AI Agent to generate
-incident reports and security recommendations. A Telegram bot exposes
-read-only ChatOps. Everything runs on one host via Docker Compose.
+<p align="center">
+  Real-time MQTT threat detection, automated incident analysis, and ChatOps — powered by Laravel, React, and AI Agents.
+</p>
 
-## Architecture
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" alt="Laravel 13">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19">
+  <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind 4">
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL 16">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
+</p>
 
-See `docs/ARCHITECTURE.md` for the diagrams and the "where things live"
-table. The condensed version: simulator -> Mosquitto -> Python ingestor ->
-Postgres -> Laravel (web + REST API + agent) -> optionally -> Telegram bot.
+---
 
-## Prerequisites
+## Tentang Project
 
-- Docker Desktop (Compose v2)
-- Optional: `make`, `gh`
+Sentinel-IoT adalah platform **Security Operations Center (SOC)** yang dirancang khusus untuk infrastruktur IoT berbasis MQTT. Sistem ini memantau perangkat IoT secara real-time, mendeteksi ancaman keamanan (payload tidak valid, publikasi tidak sah, spoofing perangkat), dan menggunakan **AI Agent** untuk menghasilkan laporan insiden serta rekomendasi keamanan secara otomatis.
 
-## Quick start (development)
+> **Konteks akademik:** Project ini dikembangkan sebagai bagian dari tugas akhir / skripsi dengan topik _"AI Agent-Based IoT Security Operation Center with Telegram ChatOps"_. Arsitektur dan fitur dirancang sesuai PRD (Product Requirements Document) yang telah ditetapkan.
+
+### Apa yang bisa dilakukan?
+
+- **Monitoring real-time** — dashboard menampilkan status perangkat, telemetry MQTT, dan skor keamanan secara live.
+- **Deteksi ancaman** — Python ingestor memvalidasi setiap payload MQTT dan mendeteksi anomali (malformed, unauthorized, spoofed).
+- **AI Incident Analyst** — agent AI (OpenAI / Anthropic / Gemini) menghasilkan laporan insiden, analisis root cause, dan rekomendasi mitigasi.
+- **Telegram ChatOps** — bot Telegram menyediakan akses read-only ke status sistem, daftar insiden, dan laporan dari mana saja.
+- **Multi-tenancy** — setiap tenant memiliki isolasi data (perangkat, telemetry, insiden) dan namespace MQTT sendiri.
+
+### Screenshot
+
+| Landing Page | Dashboard |
+|:---:|:---:|
+| ![Landing](public/demo-screenshots/01-landing.png) | ![Dashboard](public/demo-screenshots/03-dashboard.png) |
+
+| Devices | AI Agent |
+|:---:|:---:|
+| ![Devices](public/demo-screenshots/04-devices.png) | ![Agent](public/demo-screenshots/09-agent.png) |
+
+<details>
+<summary>Lihat semua screenshot</summary>
+
+| Security Events | Incidents | Telemetry |
+|:---:|:---:|:---:|
+| ![Security Events](public/demo-screenshots/06-security-events.png) | ![Incidents](public/demo-screenshots/07-incidents.png) | ![Telemetry](public/demo-screenshots/08-telemetry.png) |
+
+| Login | Device Detail |
+|:---:|:---:|
+| ![Login](public/demo-screenshots/02-login.png) | ![Device Detail](public/demo-screenshots/05-device-detail.png) |
+
+</details>
+
+---
+
+## Arsitektur
+
+```
+┌─────────────┐    MQTT     ┌──────────────┐    SQL     ┌────────────┐
+│  Simulator   │───────────▶│   Mosquitto   │──────────▶│  PostgreSQL │
+│  (Python)    │            │   Broker      │           │  Database   │
+└─────────────┘            └──────┬───────┘           └─────┬──────┘
+                                  │                          │
+                                  ▼                          ▼
+                          ┌──────────────┐           ┌────────────┐
+                          │    Python     │           │   Laravel   │
+                          │   Ingestor    │──────────▶│   (Web +    │
+                          │  (Validator)  │           │  API + AI)  │
+                          └──────────────┘           └──────┬─────┘
+                                                            │
+                                              ┌─────────────┼─────────────┐
+                                              ▼             ▼             ▼
+                                        ┌──────────┐ ┌──────────┐ ┌──────────┐
+                                        │  React   │ │  REST    │ │ Telegram │
+                                        │Dashboard │ │  API     │ │   Bot    │
+                                        └──────────┘ └──────────┘ └──────────┘
+```
+
+Alur data: **Simulator → Mosquitto (MQTT) → Python Ingestor (validasi & deteksi) → PostgreSQL → Laravel (web, API, AI Agent) → Dashboard / Telegram**
+
+---
+
+## Tech Stack
+
+| Layer | Teknologi |
+|---|---|
+| **Frontend** | React 19, Inertia.js v3, Tailwind CSS v4, TypeScript |
+| **Backend** | Laravel 13, PHP 8.5, Eloquent ORM |
+| **AI Agent** | Laravel AI SDK (OpenAI, Anthropic, Gemini) |
+| **Database** | PostgreSQL 16 |
+| **Message Broker** | Eclipse Mosquitto (MQTT v3.1.1) |
+| **Ingestor** | Python 3.12+, paho-mqtt |
+| **ChatOps** | Telegram Bot API (python-telegram-bot) |
+| **Testing** | Pest 4 (Laravel), pytest (Python) |
+| **Infra** | Docker Compose, Caddy (reverse proxy) |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Docker Desktop** (dengan Compose v2)
+- **Git**
+- API key untuk AI Agent (pilih salah satu): `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, atau `GEMINI_API_KEY`
+
+### 1. Clone & Setup
 
 ```bash
+git clone https://github.com/nabiilnuryassar/sentinel-iot.git
+cd sentinel-iot
 cp .env.example .env
-# Set OPENAI_API_KEY (or ANTHROPIC_API_KEY / GEMINI_API_KEY) for live agents.
-# Set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID if you want the bot.
+```
 
+Edit `.env` dan set API key untuk AI Agent:
+
+```env
+OPENAI_API_KEY=sk-...          # atau
+ANTHROPIC_API_KEY=sk-ant-...   # atau
+GEMINI_API_KEY=AIza...
+```
+
+### 2. Jalankan (Development)
+
+```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan key:generate
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan migrate --no-interaction
-docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan db:seed \
-  --class=DemoSeeder --no-interaction
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan db:seed --class=DemoSeeder --no-interaction
 ```
 
-Open `http://localhost:8000` and log in with `admin@sentinel.local` /
-`password`.  Vite HMR runs on port 5173 — edit any `.tsx`/`.css` file and
-the browser refreshes automatically.
+Buka **http://localhost:8000** dan login dengan:
 
-Optional — start the Telegram bot:
+| Field | Value |
+|---|---|
+| Email | `admin@sentinel.local` |
+| Password | `password` |
+
+> Vite HMR berjalan di port 5173 — edit file `.tsx` atau `.css` dan browser akan refresh otomatis.
+
+### 3. Telegram Bot (Opsional)
 
 ```bash
+# Generate API token untuk bot
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan sentinel:issue-tokens
-# Copy the BOT_API_TOKEN line into .env as LARAVEL_API_TOKEN
+
+# Copy BOT_API_TOKEN ke .env sebagai LARAVEL_API_TOKEN, lalu:
 docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile bot up -d telegram-bot
 ```
 
-## Quick start (production / demo)
+### 4. Verifikasi
 
 ```bash
-cp .env.example .env
-# Set APP_ENV=production and APP_DEBUG=false in .env.
-
-npm install && npm run build
-
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec laravel-app php artisan key:generate
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec laravel-app php artisan migrate --no-interaction
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec laravel-app php artisan db:seed \
-  --class=DemoSeeder --no-interaction
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec laravel-app php artisan sentinel:health
 ```
 
-Open `http://localhost:8000`.  No Vite HMR — changes require a rebuild.
+Pastikan semua centang hijau. Jika AI provider berwarna kuning, berarti API key belum diset (agent akan menggunakan fallback).
 
-## Verify
+---
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec laravel-app php artisan sentinel:health
+## Demo Scenarios
+
+Sistem ini dirancang dengan 4 skenario demo sesuai PRD:
+
+| # | Senario | Cara Menjalankan |
+|---|---|---|
+| 1 | **Normal telemetry** | Jalankan simulator, amati dashboard terisi data real-time |
+| 2 | **Malformed payload** | `services/attack-simulator/malformed_payload.py` |
+| 3 | **Unauthorized + Spoofed publish** | `unauthorized_publish.py` lalu `spoof_device.py` |
+| 4 | **Incident report** | Klik "Create incident" pada event spoof, lalu "Generate report" |
+
+Detail lengkap: [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md)
+
+---
+
+## Struktur Project
+
+```
+sentinel-iot/
+├── app/
+│   ├── Ai/                    # AI Agent definitions & middleware
+│   │   ├── Agents/            # SentinelAgent, IncidentAnalyst, AuditAgent
+│   │   ├── Gateway/           # AI provider gateway abstraction
+│   │   └── Middleware/        # Agent interaction logging
+│   ├── Http/Controllers/      # Laravel controllers
+│   ├── Models/                # Eloquent models (multi-tenant scoped)
+│   └── ...
+├── resources/
+│   ├── ai/prompts/            # System prompts untuk AI agents
+│   ├── js/pages/              # React pages (Inertia.js)
+│   │   ├── welcome.tsx        # Landing page
+│   │   ├── dashboard.tsx      # Main dashboard
+│   │   ├── agent/             # AI Agent chat interface
+│   │   ├── devices/           # Device management
+│   │   └── ...
+│   └── css/                   # Tailwind + custom styles
+├── services/
+│   ├── attack-simulator/      # Python attack scripts (demo scenarios)
+│   ├── mqtt-ingestor/         # Python MQTT validator & threat detector
+│   └── telegram-bot/          # Telegram ChatOps bot
+├── docker/                    # Dockerfiles & Caddy config
+├── docs/                      # Dokumentasi project
+├── docker-compose.yml         # Base compose
+├── docker-compose.dev.yml     # Development overrides
+└── docker-compose.prod.yml    # Production config
 ```
 
-You should see green checks for the database and the MQTT broker. The AI
-provider check is yellow if no key is set (the agent falls back to SDK
-fakes).
+---
 
-## Multi-tenancy (SaaS boilerplate)
-
-Sentinel-IoT is row-level multi-tenant: every tenant-owned table carries a
-`tenant_id`, and a global Eloquent scope (`BelongsToTenant`) filters all
-queries to the current tenant automatically. The current tenant is resolved
-from the authenticated user (`users.tenant_id`). See
-`docs/MULTI_TENANCY.md` for the model, how the AI tools stay tenant-scoped,
-and the per-tenant MQTT topic namespace (`tenants/{slug}/iot/#`).
-
-To use this as a per-client boilerplate: clone the repo, run migrations +
-`TenantSeeder`, and each client gets an isolated tenant row with its own
-devices, telemetry, incidents, and MQTT credentials.
-
-## Demo scenarios
-
-`docs/DEMO_SCENARIO.md` walks through PRD §23's four scenarios as runbooks
-with exact commands. The TL;DR:
-
-1. Normal telemetry — start the simulator, watch the dashboard fill in.
-2. Malformed payload — `services/attack-simulator/malformed_payload.py`.
-3. Unauthorized + spoofed publish — `unauthorized_publish.py` then
-   `spoof_device.py`.
-4. Incident report — click "Create incident" on the spoof event row, then
-   "Generate report" on the resulting incident.
-
-## Documentation
-
-- `docs/PRD.md` — original product requirements (canonical).
-- `docs/ARCHITECTURE.md` — diagrams + where things live (now with the realtime layer).
-- `docs/API.md` — REST surface, with PRD-only endpoints flagged.
-- `docs/DATABASE.md` — schema reference.
-- `docs/DEMO_SCENARIO.md` — runbooks for the four demo scenarios.
-- `docs/UI_GUIDE.md` — design system, color tokens, component map.
-- `docs/MULTI_TENANCY.md` — SaaS tenancy model, AI tool scoping, MQTT namespacing.
-
-## UI overview
-
-Sentinel-IoT ships a dark-OLED + neon SOC console:
-
-- **Welcome (`/`)** — cyberpunk landing with live-stat preview, capability
-  bento, and an agent demo terminal.
-- **Login (`/login`)** — terminal-framed sign-in with neon orbs.
-- **Dashboard (`/dashboard`)** — hero stat row, realtime telemetry chart
-  with grid background, MQTT broker status, AI agent panel.
-- **Agent (`/agent`)** — ChatGPT-style chat with token streaming over
-  Server-Sent Events, typing indicator, copy / regenerate / stop.
-- **Devices, Telemetry, Security Events, Incidents** — paginated tables
-  with `PageHeader`, status pills, severity badges, and mobile card views.
-
-See `docs/UI_GUIDE.md` for the full component / token map.
-
-## Project planning
-
-- `thoughts/shared/designs/sentinel-iot-design.md` — design slices.
-- `thoughts/shared/plans/sentinel-iot-plan.md` — phased implementation plan.
-- `thoughts/shared/progress/sentinel-iot-progress.md` — current status,
-  decisions log, known issues.
-
-## Tests
+## Testing
 
 ```bash
-# Laravel (Pest) — replace the compose file flag with your environment
+# Laravel (Pest 4)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T laravel-app php artisan test --compact
 
 # Python ingestor
@@ -146,13 +230,39 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T mqtt-inge
 cd services/telegram-bot && python -m pytest
 ```
 
-## Stop everything
+---
+
+## Dokumentasi
+
+| Dokumen | Deskripsi |
+|---|---|
+| [`docs/PRD.md`](docs/PRD.md) | Product Requirements Document (canonical) |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arsitektur sistem & diagram |
+| [`docs/API.md`](docs/API.md) | REST API surface |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Referensi skema database |
+| [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) | Runbook 4 skenario demo |
+| [`docs/UI_GUIDE.md`](docs/UI_GUIDE.md) | Design system & component map |
+| [`docs/MULTI_TENANCY.md`](docs/MULTI_TENANCY.md) | Model multi-tenancy & MQTT namespacing |
+
+---
+
+## Stop Semua Service
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml down
-# or, if running prod:
-docker compose -f docker-compose.yml -f docker-compose.prod.yml down
 ```
 
-Add `-v` to also drop the Postgres volume — useful when you want a clean
-re-seed from scratch.
+Tambahkan `-v` untuk menghapus volume database (berguna untuk re-seed dari awal).
+
+---
+
+## License
+
+MIT License. Lihat [`LICENSE`](LICENSE) untuk detail.
+
+---
+
+<p align="center">
+  Dikembangkan sebagai proyek tugas akhir / skripsi<br>
+  <strong>Universitas — Teknik Informatika</strong>
+</p>

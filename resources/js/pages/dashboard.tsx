@@ -46,7 +46,7 @@ export default function Dashboard(props: DashboardProps) {
                 />
 
                 {/* Row 2: Charts & Device Health */}
-                <section className="grid gap-4 lg:grid-cols-10">
+                <section className="grid gap-4 lg:grid-cols-12">
                     <TelemetryPanel data={props.recent_telemetry} />
                     <DeviceHealthCard
                         total={props.total_devices}

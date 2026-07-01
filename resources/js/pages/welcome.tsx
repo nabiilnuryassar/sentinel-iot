@@ -11,7 +11,6 @@ import {
     LineChart,
     Lock,
     RadioTower,
-    ShieldCheck,
     Terminal,
     Zap,
 } from 'lucide-react';
@@ -52,13 +51,9 @@ export default function Welcome() {
                         href="/"
                         className="flex items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-sentinel-teal focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
                     >
-                        <span className="relative flex size-9 items-center justify-center rounded-lg bg-sentinel-teal/15 text-sentinel-teal">
-                            <ShieldCheck aria-hidden className="size-5" />
-                            <span
-                                aria-hidden
-                                className="absolute inset-0 rounded-lg ring-1 ring-sentinel-teal/40"
-                            />
-                        </span>
+                        <div className="flex size-9 items-center justify-center overflow-hidden rounded-lg bg-primary/10 shadow-[0_0_12px_rgba(31,230,208,0.18)]">
+                            <img src="/images/sentinel-logo.svg" alt="Sentinel-IoT" className="size-8 object-contain" />
+                        </div>
                         <span className="font-mono text-sm font-semibold tracking-wider">
                             SENTINEL<span className="text-sentinel-teal">/</span>IOT
                         </span>
@@ -244,7 +239,7 @@ export default function Welcome() {
                         }
                     >
                         <img
-                            src="/images/dashboard-demo.png"
+                            src="/demo-screenshots/03-dashboard.png"
                             alt="Sentinel-IoT dashboard showing live device telemetry, threat feed, and incident panel"
                             className="mx-auto h-full w-full object-cover object-left-top"
                             draggable={false}

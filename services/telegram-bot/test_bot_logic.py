@@ -36,7 +36,12 @@ class FakeMessage:
     replies: list[tuple[str, str | None]] = field(default_factory=list)
     fail_on_markdown: bool = False
 
-    async def reply_text(self, text: str, parse_mode: str | None = None) -> None:
+    async def reply_text(
+        self,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any = None,
+    ) -> None:
         if self.fail_on_markdown and parse_mode == "Markdown":
             raise BadRequest("Can't parse entities: can't find end of the entity")
         self.replies.append((text, parse_mode))
@@ -48,14 +53,35 @@ class FakeChat:
 
 
 @dataclass
+class FakeCallbackQuery:
+    data: str
+    answered: bool = False
+
+    async def answer(self) -> None:
+        self.answered = True
+
+
+@dataclass
 class FakeUpdate:
     effective_chat: FakeChat | None
     message: FakeMessage | None
+    callback_query: FakeCallbackQuery | None = None
 
 
 @dataclass
 class FakeBot:
     actions: list[tuple[int, str]] = field(default_factory=list)
+    sent: list[tuple[int, str, str | None]] = field(default_factory=list)
+
+    async def send_message(
+        self,
+        *,
+        chat_id: int,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: Any = None,
+    ) -> None:
+        self.sent.append((chat_id, text, parse_mode))
 
     async def send_chat_action(self, *, chat_id: int, action: str) -> None:
         self.actions.append((chat_id, action))
@@ -220,6 +246,110 @@ async def test_incidents_handler_filters_to_open():
     text, _ = update.message.replies[0]
     assert "Suspicious publish flood" in text
     assert "(#7)" in text
+
+
+@pytest.mark.asyncio
+async def test_events_handler_calls_security_events_endpoint():
+    captured: dict[str, Any] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["method"] = request.method
+        captured["path"] = request.url.path
+        captured["query"] = dict(request.url.params)
+        return httpx.Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "id": 284,
+                        "event_type": "device_spoofing",
+                        "severity": "high",
+                        "source_client_id": "door-lock-001",
+                        "detected_at": "2026-06-30T21:54:24+00:00",
+                    },
+                    {
+                        "id": 283,
+                        "event_type": "malformed_payload",
+                        "severity": "low",
+                        "source_client_id": None,
+                        "detected_at": "2026-06-30T20:26:38+00:00",
+                    },
+                ]
+            },
+        )
+
+    client = _make_client(handler)
+    update = FakeUpdate(effective_chat=FakeChat(id=42), message=FakeMessage("/events"))
+    context = _build_context(client)
+
+    await bot.events_handler(update, context)
+    await client.aclose()
+
+    assert captured["method"] == "GET"
+    assert captured["path"] == "/api/security-events"
+    assert update.message is not None
+    text, _ = update.message.replies[0]
+    assert "device_spoofing" in text
+    assert "door-lock-001" in text
+    assert "unknown" in text  # null source_client_id falls back
+
+
+@pytest.mark.asyncio
+async def test_callback_button_runs_action_and_replies_with_keyboard():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "total_devices": 7,
+                "online_devices": 5,
+                "offline_devices": 2,
+                "security_events_today": 190,
+                "open_incidents": 10,
+                "risk_level": "high",
+            },
+        )
+
+    client = _make_client(handler)
+    update = FakeUpdate(
+        effective_chat=FakeChat(id=42),
+        message=None,
+        callback_query=FakeCallbackQuery(data="status"),
+    )
+    context = _build_context(client)
+
+    await bot.callback_handler(update, context)
+    await client.aclose()
+
+    # Spinner stopped.
+    assert update.callback_query is not None
+    assert update.callback_query.answered is True
+    # Reply went out via bot.send_message (not message.reply_text).
+    assert context.bot.sent, "expected a sent message"
+    chat_id, text, parse_mode = context.bot.sent[0]
+    assert chat_id == 42
+    assert "Sentinel-IoT status" in text
+    assert parse_mode == "Markdown"
+
+
+@pytest.mark.asyncio
+async def test_callback_non_admin_is_dropped():
+    def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+        raise AssertionError("API must not be called for non-admin")
+
+    client = _make_client(handler)
+    update = FakeUpdate(
+        effective_chat=FakeChat(id=999),  # not the admin id (42)
+        message=None,
+        callback_query=FakeCallbackQuery(data="status"),
+    )
+    context = _build_context(client)
+
+    await bot.callback_handler(update, context)
+    await client.aclose()
+
+    assert not context.bot.sent
+    assert update.callback_query is not None
+    assert update.callback_query.answered is False
 
 
 @pytest.mark.asyncio

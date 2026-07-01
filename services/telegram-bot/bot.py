@@ -17,11 +17,17 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 
 from dotenv import load_dotenv
-from telegram import Update
+from telegram import (
+    BotCommand,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Update,
+)
 from telegram.constants import ChatAction, ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
     Application,
+    CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
     MessageHandler,
@@ -157,9 +163,102 @@ def _api(context: ContextTypes.DEFAULT_TYPE) -> SentinelApiClient:
     return client
 
 
+# Persistent slash-command menu shown in Telegram's "/" picker and the
+# blue Menu button. Registered once on startup via post_init.
+BOT_COMMANDS = [
+    BotCommand("menu", "Tap-button control panel"),
+    BotCommand("status", "Operations summary"),
+    BotCommand("devices", "List devices"),
+    BotCommand("incidents", "List open incidents"),
+    BotCommand("events", "Recent security events"),
+    BotCommand("audit", "Run a broker security audit"),
+    BotCommand("help", "Show command help"),
+]
+
+
+def _menu_keyboard() -> InlineKeyboardMarkup:
+    """Inline tap-button panel so the user never has to type a command."""
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("📊 Status", callback_data="status"),
+                InlineKeyboardButton("📡 Devices", callback_data="devices"),
+            ],
+            [
+                InlineKeyboardButton("🚨 Incidents", callback_data="incidents"),
+                InlineKeyboardButton("🛡️ Events", callback_data="events"),
+            ],
+            [
+                InlineKeyboardButton("🔍 Run Audit", callback_data="audit"),
+                InlineKeyboardButton("❔ Help", callback_data="help"),
+            ],
+        ]
+    )
+
+
+# --- Shared action layer: each fetches + formats one view. -----------------
+# Both command handlers and inline-button callbacks delegate here so the two
+# entry points can never drift apart.
+
+
+async def _action_status(context: ContextTypes.DEFAULT_TYPE) -> str:
+    try:
+        return formatters.format_status(await _api(context).dashboard_summary())
+    except SentinelApiError as exc:
+        LOG.exception("status request failed")
+        return formatters.format_error(str(exc))
+
+
+async def _action_devices(context: ContextTypes.DEFAULT_TYPE) -> str:
+    try:
+        return formatters.format_devices(await _api(context).list_devices())
+    except SentinelApiError as exc:
+        LOG.exception("devices request failed")
+        return formatters.format_error(str(exc))
+
+
+async def _action_incidents(context: ContextTypes.DEFAULT_TYPE) -> str:
+    try:
+        return formatters.format_incidents(await _api(context).list_open_incidents())
+    except SentinelApiError as exc:
+        LOG.exception("incidents request failed")
+        return formatters.format_error(str(exc))
+
+
+async def _action_events(context: ContextTypes.DEFAULT_TYPE) -> str:
+    try:
+        return formatters.format_events(await _api(context).list_security_events())
+    except SentinelApiError as exc:
+        LOG.exception("events request failed")
+        return formatters.format_error(str(exc))
+
+
+async def _action_audit(context: ContextTypes.DEFAULT_TYPE) -> str:
+    try:
+        return formatters.format_agent_response(await _api(context).agent_audit())
+    except SentinelApiError as exc:
+        LOG.exception("audit request failed")
+        return formatters.format_error(str(exc))
+
+
 @admin_only
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await _reply_markdown(update, formatters.format_start())
+    if update.message:
+        await update.message.reply_text(
+            formatters.truncate(formatters.format_start()),
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=_menu_keyboard(),
+        )
+
+
+@admin_only
+async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message:
+        await update.message.reply_text(
+            formatters.truncate(formatters.format_menu()),
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=_menu_keyboard(),
+        )
 
 
 @admin_only
@@ -169,35 +268,22 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 @admin_only
 async def status_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    try:
-        payload = await _api(context).dashboard_summary()
-        text = formatters.format_status(payload)
-    except SentinelApiError as exc:
-        LOG.exception("status request failed")
-        text = formatters.format_error(str(exc))
-    await _reply_markdown(update, text)
+    await _reply_markdown(update, await _action_status(context))
 
 
 @admin_only
 async def devices_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    try:
-        payload = await _api(context).list_devices()
-        text = formatters.format_devices(payload)
-    except SentinelApiError as exc:
-        LOG.exception("devices request failed")
-        text = formatters.format_error(str(exc))
-    await _reply_markdown(update, text)
+    await _reply_markdown(update, await _action_devices(context))
 
 
 @admin_only
 async def incidents_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    try:
-        payload = await _api(context).list_open_incidents()
-        text = formatters.format_incidents(payload)
-    except SentinelApiError as exc:
-        LOG.exception("incidents request failed")
-        text = formatters.format_error(str(exc))
-    await _reply_markdown(update, text)
+    await _reply_markdown(update, await _action_incidents(context))
+
+
+@admin_only
+async def events_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await _reply_markdown(update, await _action_events(context))
 
 
 @admin_only
@@ -205,13 +291,53 @@ async def audit_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     chat = update.effective_chat
     if chat:
         await context.bot.send_chat_action(chat_id=chat.id, action=ChatAction.TYPING)
+    await _reply_markdown(update, await _action_audit(context))
+
+
+@admin_only
+async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Dispatch inline-button taps to the shared action layer."""
+    query = update.callback_query
+    if not query:
+        return
+    await query.answer()  # Stop Telegram's loading spinner.
+
+    action = query.data or ""
+    chat = update.effective_chat
+
+    if action == "help":
+        text = formatters.format_help()
+    elif action == "status":
+        text = await _action_status(context)
+    elif action == "devices":
+        text = await _action_devices(context)
+    elif action == "incidents":
+        text = await _action_incidents(context)
+    elif action == "events":
+        text = await _action_events(context)
+    elif action == "audit":
+        if chat:
+            await context.bot.send_chat_action(chat_id=chat.id, action=ChatAction.TYPING)
+        text = await _action_audit(context)
+    else:
+        text = formatters.format_error(f"unknown action: {action}")
+
+    if not chat:
+        return
+    capped = formatters.truncate(text)
     try:
-        payload = await _api(context).agent_audit()
-        text = formatters.format_agent_response(payload)
-    except SentinelApiError as exc:
-        LOG.exception("audit request failed")
-        text = formatters.format_error(str(exc))
-    await _reply_markdown(update, text)
+        await context.bot.send_message(
+            chat_id=chat.id,
+            text=capped,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=_menu_keyboard(),
+        )
+    except BadRequest as exc:
+        if "can't parse entities" not in str(exc).lower():
+            raise
+        await context.bot.send_message(
+            chat_id=chat.id, text=capped, reply_markup=_menu_keyboard()
+        )
 
 
 @admin_only
@@ -230,9 +356,23 @@ async def free_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     await _reply_markdown(update, text)
 
 
+async def _register_commands(application: Application) -> None:
+    """post_init hook: publish the slash-command menu to Telegram."""
+    try:
+        await application.bot.set_my_commands(BOT_COMMANDS)
+        LOG.info("registered %d bot commands", len(BOT_COMMANDS))
+    except Exception:  # noqa: BLE001 — non-fatal; bot still works without the menu.
+        LOG.exception("failed to register bot commands")
+
+
 def build_application(settings: BotSettings, *, api_client: SentinelApiClient | None = None) -> Application:
     """Wire handlers and bot_data. Exposed for tests."""
-    application = Application.builder().token(settings.telegram_token).build()
+    application = (
+        Application.builder()
+        .token(settings.telegram_token)
+        .post_init(_register_commands)
+        .build()
+    )
 
     if api_client is None:
         api_client = SentinelApiClient(
@@ -246,11 +386,14 @@ def build_application(settings: BotSettings, *, api_client: SentinelApiClient | 
     application.bot_data[ADMIN_CHAT_ID_KEY] = settings.admin_chat_id
 
     application.add_handler(CommandHandler("start", start_handler))
+    application.add_handler(CommandHandler("menu", menu_handler))
     application.add_handler(CommandHandler("help", help_handler))
     application.add_handler(CommandHandler("status", status_handler))
     application.add_handler(CommandHandler("devices", devices_handler))
     application.add_handler(CommandHandler("incidents", incidents_handler))
+    application.add_handler(CommandHandler("events", events_handler))
     application.add_handler(CommandHandler("audit", audit_handler))
+    application.add_handler(CallbackQueryHandler(callback_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, free_text_handler))
 
     return application

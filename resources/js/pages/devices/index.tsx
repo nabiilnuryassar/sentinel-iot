@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ChevronRight } from 'lucide-react';
 import { DataTable } from '@/components/data-table';
+import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/page-header';
 import { StatusPill } from '@/components/status-pill';
 import type { DeviceStatus } from '@/components/status-pill';
@@ -102,8 +103,7 @@ export default function DevicesIndex({ devices }: DevicesIndexProps) {
                             // inventory
                         </CardTitle>
                         <CardDescription>
-                            {devices.total} total devices · page{' '}
-                            {devices.current_page} of {devices.last_page}
+                            {devices.total} total devices
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -111,6 +111,14 @@ export default function DevicesIndex({ devices }: DevicesIndexProps) {
                             columns={columns}
                             data={devices.data}
                             emptyMessage="No devices registered."
+                        />
+                        <Pagination
+                            links={devices.links}
+                            from={devices.from}
+                            to={devices.to}
+                            total={devices.total}
+                            currentPage={devices.current_page}
+                            lastPage={devices.last_page}
                         />
                     </CardContent>
                 </Card>

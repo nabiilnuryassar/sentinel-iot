@@ -39,6 +39,7 @@ class LogAgentInteractions
             $request = request();
 
             AgentMessage::query()->create([
+                'tenant_id' => auth()->user()?->tenant_id ?? 1,
                 'user_id' => $this->resolveUserId($agent),
                 'source' => $request !== null && $request->is('api/*')
                     ? AgentMessage::SOURCE_TELEGRAM

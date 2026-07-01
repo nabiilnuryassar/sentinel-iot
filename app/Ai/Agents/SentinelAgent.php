@@ -36,11 +36,16 @@ use Stringable;
  */
 #[Provider(Lab::OpenAI)]
 #[MaxSteps(6)]
-#[Model('main-combo')]
+#[Model('cx/gpt-5.5')]
 class SentinelAgent implements Agent, Conversational, HasMiddleware, HasTools
 {
     use Promptable;
     use RemembersConversations;
+
+    public function model(): string
+    {
+        return config('ai.providers.openai.models.text.default', 'cx/gpt-5.5');
+    }
 
     public function __construct(public ?User $user = null)
     {

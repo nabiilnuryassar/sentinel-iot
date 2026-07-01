@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import {
+    ArrowDown,
     BrainCircuit,
     Check,
     Copy,
@@ -9,7 +10,7 @@ import {
     Square,
     User,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { MarkdownView } from '@/components/markdown-view';
 import { PageHeader } from '@/components/page-header';
@@ -65,6 +66,7 @@ export default function AgentIndex({ messages, stream_url }: AgentIndexProps) {
     const lastHistorySigRef = useRef(historySignature(messages));
     const [prompt, setPrompt] = useState('');
     const [streaming, setStreaming] = useState(false);
+    const [isNearBottom, setIsNearBottom] = useState(true);
     const abortRef = useRef<AbortController | null>(null);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -81,15 +83,47 @@ export default function AgentIndex({ messages, stream_url }: AgentIndexProps) {
         setChat(initialChat);
     }, [messages, initialChat]);
 
+    const checkIfNearBottom = useCallback(() => {
+        const node = scrollRef.current;
+
+        if (!node) {
+            return;
+        }
+
+        const threshold = 120;
+        const distanceFromBottom =
+            node.scrollHeight - node.scrollTop - node.clientHeight;
+        setIsNearBottom(distanceFromBottom <= threshold);
+    }, []);
+
+    const scrollToBottom = useCallback(() => {
+        const node = scrollRef.current;
+
+        if (!node) {
+            return;
+        }
+
+        node.scrollTo({ top: node.scrollHeight, behavior: 'smooth' });
+    }, []);
+
+    useEffect(() => {
+        // Only auto-scroll when user is near the bottom (not scrolled up reading).
+        if (isNearBottom) {
+            scrollToBottom();
+        }
+    }, [chat, isNearBottom, scrollToBottom]);
+
     useEffect(() => {
         const node = scrollRef.current;
 
         if (!node) {
-return;
-}
+            return;
+        }
 
-        node.scrollTo({ top: node.scrollHeight, behavior: 'smooth' });
-    }, [chat]);
+        node.addEventListener('scroll', checkIfNearBottom, { passive: true });
+
+        return () => node.removeEventListener('scroll', checkIfNearBottom);
+    }, [checkIfNearBottom]);
 
     useEffect(() => {
         // Auto-grow textarea up to 6 lines.
@@ -311,19 +345,20 @@ return prev;
     return (
         <AppLayout>
             <Head title="Agent" />
-            <div className="flex min-h-[calc(100vh-7rem)] flex-col gap-4 lg:gap-5">
+            <div className="flex h-[calc(100vh-7rem)] flex-col gap-3 lg:h-[calc(100vh-5.5rem)] lg:gap-4">
                 <PageHeader
                     title="AI Agent / ChatOps"
-                    subtitle="OpenClaw · Hermes-style Agent"
+                    subtitle="Sentinel AI · Security Co-Pilot"
                     actions={<StatusPill status="online" />}
+                    className="shrink-0"
                 />
 
-                <div className="grid flex-1 gap-4 lg:grid-cols-[1fr_18rem]">
+                <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_18rem]">
                     <section
                         aria-label="Conversation"
-                        className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur"
+                        className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur"
                     >
-                        <header className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
+                        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
                             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                                 <BrainCircuit
                                     aria-hidden
@@ -336,25 +371,40 @@ return prev;
                             </span>
                         </header>
 
-                        <div
-                            ref={scrollRef}
-                            className="flex-1 space-y-5 overflow-y-auto px-3 py-5 sm:px-6"
-                        >
-                            {chat.length === 0 ? (
-                                <EmptyState onPick={(p) => void send(p)} />
-                            ) : (
-                                chat.map((message) => (
-                                    <ChatBubble
-                                        key={message.id}
-                                        message={message}
-                                    />
-                                ))
-                            )}
+                        <div className="relative min-h-0 flex-1">
+                            <div
+                                ref={scrollRef}
+                                className="absolute inset-0 space-y-5 overflow-y-auto overscroll-contain scroll-smooth px-3 py-5 sm:px-6"
+                            >
+                                {chat.length === 0 ? (
+                                    <EmptyState onPick={(p) => void send(p)} />
+                                ) : (
+                                    chat.map((message) => (
+                                        <ChatBubble
+                                            key={message.id}
+                                            message={message}
+                                        />
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Scroll-to-bottom FAB */}
+                            {!isNearBottom && chat.length > 0 ? (
+                                <button
+                                    type="button"
+                                    onClick={scrollToBottom}
+                                    className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-border/80 bg-background/90 px-3 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground shadow-lg backdrop-blur-sm transition hover:border-primary/50 hover:text-foreground"
+                                    aria-label="Scroll to latest message"
+                                >
+                                    <ArrowDown aria-hidden className="size-3" />
+                                    Latest
+                                </button>
+                            ) : null}
                         </div>
 
                         <form
                             onSubmit={onSubmit}
-                            className="flex flex-col gap-2 border-t border-border/70 bg-background/40 p-3 sm:p-4"
+                            className="flex shrink-0 flex-col gap-2 border-t border-border/70 bg-background/40 p-3 sm:p-4"
                         >
                             <Textarea
                                 ref={textareaRef}
@@ -373,21 +423,21 @@ return prev;
                                     {flashError}
                                 </p>
                             ) : null}
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex flex-wrap gap-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="scrollbar-none flex gap-2 overflow-x-auto">
                                     {QUICK_PROMPTS.map((q) => (
                                         <button
                                             key={q}
                                             type="button"
                                             disabled={streaming}
                                             onClick={() => setPrompt(q)}
-                                            className="rounded-full border border-border/70 bg-background/40 px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="shrink-0 rounded-full border border-border/70 bg-background/40 px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground transition hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {q}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-2">
                                     {chat.some((m) => m.role === 'assistant') ? (
                                         <Button
                                             type="button"
@@ -402,7 +452,7 @@ return prev;
                                                 aria-hidden
                                                 className="size-3.5"
                                             />
-                                            Regenerate
+                                            <span className="hidden sm:inline">Regenerate</span>
                                         </Button>
                                     ) : null}
                                     {streaming ? (
@@ -438,8 +488,8 @@ return prev;
                         </form>
                     </section>
 
-                    <aside className="flex flex-col gap-3 lg:max-h-[calc(100vh-12rem)]">
-                        <div className="rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur">
+                    <aside className="hidden min-h-0 flex-col gap-3 lg:flex">
+                        <div className="shrink-0 rounded-2xl border border-border/80 bg-card/60 p-4 backdrop-blur">
                             <h2 className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                                 <Sparkles
                                     aria-hidden
@@ -456,8 +506,8 @@ return prev;
                             </ul>
                         </div>
 
-                        <div className="flex-1 overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur">
-                            <header className="flex items-center justify-between gap-2 border-b border-border/70 px-4 py-3">
+                        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/60 backdrop-blur">
+                            <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border/70 px-4 py-3">
                                 <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                                     History
                                 </h2>
@@ -465,7 +515,7 @@ return prev;
                                     {messages.length} prior
                                 </span>
                             </header>
-                            <div className="max-h-[50vh] space-y-3 overflow-y-auto px-3 py-3 lg:max-h-none">
+                            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3">
                                 {messages.length === 0 ? (
                                     <p className="px-1 text-xs text-muted-foreground">
                                         No prior conversations.
@@ -619,7 +669,7 @@ function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
             </span>
             <div className="space-y-1">
                 <h2 className="font-mono text-base uppercase tracking-[0.2em]">
-                    OpenClaw is listening
+                    Sentinel AI is listening
                 </h2>
                 <p className="text-sm text-muted-foreground">
                     Ask anything about devices, telemetry, security events, or

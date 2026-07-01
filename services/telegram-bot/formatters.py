@@ -69,10 +69,11 @@ def severity_marker(severity: str | None) -> str:
 def format_help() -> str:
     return (
         "*Sentinel-IoT bot commands*\n"
-        "/start — health check\n"
+        "/menu — tap-button control panel\n"
         "/status — operations summary\n"
         "/devices — list devices\n"
         "/incidents — list open incidents\n"
+        "/events — recent security events\n"
         "/audit — run a broker security audit\n"
         "/help — show this message\n"
         "_Free text is forwarded to the Sentinel agent._"
@@ -80,7 +81,33 @@ def format_help() -> str:
 
 
 def format_start() -> str:
-    return "Sentinel-IoT bot ready. Use /help for commands."
+    return (
+        "*Sentinel-IoT bot ready* 🛡️\n"
+        "Tap a button below or use /help for all commands."
+    )
+
+
+def format_menu() -> str:
+    return "*Sentinel-IoT control panel*\nPick an action:"
+
+
+def format_events(payload: dict[str, Any], *, limit: int = 10) -> str:
+    events = list(_devices_iter(payload))
+    if not events:
+        return "No recent security events."
+
+    shown = events[:limit]
+    lines = ["*Recent security events*"]
+    for event in shown:
+        marker = severity_marker(event.get("severity"))
+        etype = event.get("event_type", "unknown")
+        source = event.get("source_client_id") or "unknown"
+        seen = _relative_time(event.get("detected_at"))
+        lines.append(f"{marker} *{etype}* · `{source}` · {seen}")
+
+    if len(events) > limit:
+        lines.append(f"_…and {len(events) - limit} more_")
+    return "\n".join(lines)
 
 
 def format_status(summary: dict[str, Any]) -> str:

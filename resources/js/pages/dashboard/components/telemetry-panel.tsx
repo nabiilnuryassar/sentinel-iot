@@ -15,7 +15,7 @@ export function TelemetryPanel({ data }: TelemetryPanelProps) {
     const noData = data.length === 0 || data.every((d) => d.temperature === 0 && d.humidity === 0 && d.battery === 0);
 
     return (
-        <Card className="sentinel-surface sentinel-grid-bg relative overflow-hidden lg:col-span-6 border-border/10">
+        <Card className="sentinel-surface sentinel-grid-bg relative overflow-hidden lg:col-span-7 border-border/10">
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"

@@ -4,6 +4,7 @@ import { FilePlus2 } from 'lucide-react';
 import { useState } from 'react';
 import IncidentController from '@/actions/App/Http/Controllers/IncidentController';
 import { DataTable } from '@/components/data-table';
+import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/page-header';
 import { SeverityBadge } from '@/components/severity-badge';
 import type { Severity } from '@/components/severity-badge';
@@ -458,8 +459,7 @@ export default function SecurityEventsIndex({
                             Events
                         </CardTitle>
                         <CardDescription>
-                            {events.total} entries · page {events.current_page}{' '}
-                            of {events.last_page}
+                            {events.total} entries
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -467,6 +467,14 @@ export default function SecurityEventsIndex({
                             columns={columns}
                             data={events.data}
                             emptyMessage="No security events yet."
+                        />
+                        <Pagination
+                            links={events.links}
+                            from={events.from}
+                            to={events.to}
+                            total={events.total}
+                            currentPage={events.current_page}
+                            lastPage={events.last_page}
                         />
                     </CardContent>
                 </Card>

@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { DataTable } from '@/components/data-table';
+import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/page-header';
 import { SeverityBadge } from '@/components/severity-badge';
 import type { Severity } from '@/components/severity-badge';
@@ -304,8 +305,7 @@ export default function IncidentsIndex({ incidents }: IncidentsIndexProps) {
                             All incidents
                         </CardTitle>
                         <CardDescription>
-                            {incidents.total} entries · page{' '}
-                            {incidents.current_page} of {incidents.last_page}
+                            {incidents.total} entries
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -313,6 +313,14 @@ export default function IncidentsIndex({ incidents }: IncidentsIndexProps) {
                             columns={columns}
                             data={incidents.data}
                             emptyMessage="No incidents filed."
+                        />
+                        <Pagination
+                            links={incidents.links}
+                            from={incidents.from}
+                            to={incidents.to}
+                            total={incidents.total}
+                            currentPage={incidents.current_page}
+                            lastPage={incidents.last_page}
                         />
                     </CardContent>
                 </Card>

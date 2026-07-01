@@ -72,3 +72,6 @@ tests/e2e/tests/
 
 # Mosquitto generated secrets
 mosquitto/secrets/
+
+# Large generated artifacts (rebuildable)
+docs/demo-presentation.html

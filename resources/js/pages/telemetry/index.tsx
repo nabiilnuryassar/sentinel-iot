@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/data-table';
+import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -201,8 +202,7 @@ export default function TelemetryIndex({
                             Logs
                         </CardTitle>
                         <CardDescription>
-                            {logs.total} entries · page {logs.current_page} of{' '}
-                            {logs.last_page}
+                            {logs.total} entries
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -210,6 +210,14 @@ export default function TelemetryIndex({
                             columns={columns}
                             data={logs.data}
                             emptyMessage="No telemetry yet."
+                        />
+                        <Pagination
+                            links={logs.links}
+                            from={logs.from}
+                            to={logs.to}
+                            total={logs.total}
+                            currentPage={logs.current_page}
+                            lastPage={logs.last_page}
                         />
                     </CardContent>
                 </Card>

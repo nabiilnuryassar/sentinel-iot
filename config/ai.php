@@ -84,6 +84,14 @@ return [
         'deepseek' => [
             'driver' => 'deepseek',
             'key' => env('DEEPSEEK_API_KEY'),
+            'url' => env('DEEPSEEK_URL', 'https://api.deepseek.com/v1'),
+            'models' => [
+                'text' => [
+                    'default' => env('DEEPSEEK_MODEL', 'cx/gpt-5.5'),
+                    'cheapest' => env('DEEPSEEK_MODEL', 'cx/gpt-5.5'),
+                    'smartest' => env('DEEPSEEK_MODEL', 'cx/gpt-5.5'),
+                ],
+            ],
         ],
 
         'eleven' => [
@@ -122,6 +130,13 @@ return [
             'driver' => 'openai',
             'key' => env('OPENAI_API_KEY'),
             'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),
+            'models' => [
+                'text' => [
+                    'default' => env('OPENAI_MODEL', 'cx/gpt-5.5'),
+                    'cheapest' => env('OPENAI_MODEL', 'cx/gpt-5.5'),
+                    'smartest' => env('OPENAI_MODEL', 'cx/gpt-5.5'),
+                ],
+            ],
         ],
 
         'openrouter' => [

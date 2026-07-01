@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Schema;
  * agent_conversation_messages) without touching `users` or migrations, then
  * re-seeds the five simulator profiles, an hour of telemetry, five security
  * events, and two open incidents. Finishes by issuing a fresh Sanctum `bot`
- * token and printing it as `BOT_API_TOKEN=<value>` so the demo runner can
+ * token and printing it as `BOT_API_TOKEN=*** so the demo runner can
  * paste it into the Telegram bot's env.
  *
  * Run via: `php artisan db:seed --class=DemoSeeder --no-interaction`.
@@ -154,6 +154,7 @@ class DemoSeeder extends Seeder
         $devices = [];
         foreach ($profiles as $profile) {
             $devices[$profile['device_id']] = Device::query()->create([
+                'tenant_id' => 1,
                 'device_id' => $profile['device_id'],
                 'name' => $profile['name'],
                 'type' => $profile['type'],
@@ -197,6 +198,7 @@ class DemoSeeder extends Seeder
                 $rssi = random_int(-85, -55);
 
                 $rows[] = [
+                    'tenant_id' => 1,
                     'device_id' => $device->device_id,
                     'topic' => $topic,
                     'payload_json' => json_encode([
@@ -233,6 +235,7 @@ class DemoSeeder extends Seeder
         $now = now();
 
         $malformedA = SecurityEvent::query()->create([
+            'tenant_id' => 1,
             'event_type' => SecurityEvent::TYPE_MALFORMED_PAYLOAD,
             'severity' => SecurityEvent::SEVERITY_MEDIUM,
             'source_client_id' => 'temp-sensor-001',
@@ -243,6 +246,7 @@ class DemoSeeder extends Seeder
         ]);
 
         $malformedB = SecurityEvent::query()->create([
+            'tenant_id' => 1,
             'event_type' => SecurityEvent::TYPE_MALFORMED_PAYLOAD,
             'severity' => SecurityEvent::SEVERITY_MEDIUM,
             'source_client_id' => 'temp-sensor-001',
@@ -253,6 +257,7 @@ class DemoSeeder extends Seeder
         ]);
 
         $spoof = SecurityEvent::query()->create([
+            'tenant_id' => 1,
             'event_type' => SecurityEvent::TYPE_DEVICE_SPOOFING,
             'severity' => SecurityEvent::SEVERITY_HIGH,
             'source_client_id' => 'attacker-client',
@@ -266,6 +271,7 @@ class DemoSeeder extends Seeder
         ]);
 
         $flood = SecurityEvent::query()->create([
+            'tenant_id' => 1,
             'event_type' => SecurityEvent::TYPE_PUBLISH_FLOOD,
             'severity' => SecurityEvent::SEVERITY_HIGH,
             'source_client_id' => 'noisy-client',
@@ -279,6 +285,7 @@ class DemoSeeder extends Seeder
         ]);
 
         $unauthorized = SecurityEvent::query()->create([
+            'tenant_id' => 1,
             'event_type' => SecurityEvent::TYPE_UNAUTHORIZED_PUBLISH,
             'severity' => SecurityEvent::SEVERITY_CRITICAL,
             'source_client_id' => 'attacker-client',
@@ -310,6 +317,7 @@ class DemoSeeder extends Seeder
     protected function seedIncidents(User $admin, array $events): void
     {
         Incident::query()->create([
+            'tenant_id' => 1,
             'title' => 'Unauthorized publish attempt detected',
             'severity' => Incident::SEVERITY_HIGH,
             'status' => Incident::STATUS_OPEN,
@@ -324,6 +332,7 @@ class DemoSeeder extends Seeder
         ]);
 
         Incident::query()->create([
+            'tenant_id' => 1,
             'title' => 'Repeated malformed payloads from temp-sensor-001',
             'severity' => Incident::SEVERITY_MEDIUM,
             'status' => Incident::STATUS_OPEN,
@@ -350,6 +359,8 @@ class DemoSeeder extends Seeder
         $admin->tokens()->where('name', 'bot')->delete();
         $token = $admin->createToken('bot')->plainTextToken;
 
+        $admin->tokens()->where("name", "bot")->delete();
+        $token = $admin->createToken("bot")->plainTextToken;
         $this->command->info("BOT_API_TOKEN={$token}");
     }
 
