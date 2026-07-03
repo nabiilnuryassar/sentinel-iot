@@ -6,7 +6,7 @@
 **Tugas Akhir — Mata Kuliah Proyek 2**
 
 **Oleh:**
-**Nabiil Nuryassar**
+**Nabiil Nuryassar dan Angga Saputra**
 
 **Institut Teknologi dan Bisnis Bina Sarana Global**
 
@@ -22,7 +22,7 @@ Institut Teknologi dan Bisnis Bina Sarana Global sebagai institusi pendidikan ti
 
 Namun demikian, monitoring perangkat IoT yang dilakukan secara manual memiliki sejumlah keterbatasan yang signifikan. Pendekatan konvensional seperti memeriksa log secara langsung, memantau setiap perangkat satu per satu, atau mengandalkan notifikasi sederhana dirasa kurang memadai dalam menghadapi volume data yang besar dan kompleksitas jaringan IoT yang terus berkembang. Metode manual tersebut tidak hanya membutuhkan waktu dan tenaga yang besar, tetapi juga rentan terhadap *human error* dan keterlambatan dalam merespons insiden keamanan. Kondisi ini menunjukkan perlunya pengembangan sistem monitoring berbasis web yang dapat menyajikan data secara terpusat, *real-time*, dan interaktif, sehingga pengguna dapat dengan mudah memantau kondisi seluruh perangkat IoT dan merespons setiap anomali keamanan dengan cepat dan tepat.
 
-Berdasarkan pertimbangan-pertimbangan tersebut, penulis memilih topik **"Sistem Monitoring Keamanan Internet of Things (IoT) Berbasis Web Menggunakan Framework Laravel dan React"** sebagai tugas akhir mata kuliah Proyek 2. Sistem ini, yang diberi nama **Sentinel-IoT**, dirancang untuk menjawab kebutuhan akan platform monitoring IoT yang modern, terintegrasi, dan *user-friendly*. Pemilihan framework Laravel sebagai *backend* dan React sebagai *frontend* didasarkan pada kematangan ekosistem, dukungan komunitas yang luas, serta kemampuan keduanya dalam membangun aplikasi web yang *scalable* dan *maintainable*. Dengan pemanfaatan protokol MQTT yang ringan dan efisien untuk komunikasi antara perangkat IoT dan server, serta integrasi dengan simulator perangkat keras Wokwi untuk keperluan pengembangan dan pengujian, penulis berharap sistem Sentinel-IoT dapat menjadi solusi monitoring yang komprehensif dan aplikatif.
+Berdasarkan pertimbangan-pertimbangan tersebut, penulis memilih topik **"Sistem Monitoring Keamanan Internet of Things (IoT) Berbasis Web Menggunakan Framework Laravel dan React (Studi Kasus: Software House Kanezza Tech)"** sebagai tugas akhir mata kuliah Proyek 2. Sistem ini, yang diberi nama **Sentinel-IoT**, dirancang untuk menjawab kebutuhan akan platform monitoring IoT yang modern, terintegrasi, dan *user-friendly* guna mendukung operasional dan keamanan infrastruktur di lingkungan Kanezza Tech. Pemilihan framework Laravel sebagai *backend* dan React sebagai *frontend* didasarkan pada kematangan ekosistem, dukungan komunitas yang luas, serta kemampuan keduanya dalam membangun aplikasi web yang *scalable* dan *maintainable*. Dengan pemanfaatan protokol MQTT yang ringan dan efisien untuk komunikasi antara perangkat IoT dan server, serta integrasi dengan simulator perangkat keras Wokwi untuk keperluan pengembangan dan pengujian, penulis berharap sistem Sentinel-IoT dapat menjadi solusi monitoring yang komprehensif dan aplikatif.
 
 ## 1.2 Rumusan Masalah
 

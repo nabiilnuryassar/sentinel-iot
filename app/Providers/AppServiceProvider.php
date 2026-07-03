@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Events\AgentMessageCompleted;
 use App\Listeners\LogAgentMessageCompletion;
+use App\Models\SecurityEvent;
+use App\Observers\SecurityEventObserver;
 use App\Storage\TenantAwareConversationStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -36,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
             AgentMessageCompleted::class,
             LogAgentMessageCompletion::class,
         );
+
+        SecurityEvent::observe(SecurityEventObserver::class);
     }
 
     /**

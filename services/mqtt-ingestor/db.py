@@ -13,9 +13,11 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from datetime import datetime, timezone
 from typing import Any
 
+import httpx
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
 
@@ -202,4 +204,79 @@ def insert_security_event(
             ),
         )
         row = cur.fetchone()
-        return int(row[0]) if row else 0
+        event_id = int(row[0]) if row else 0
+
+    # Push Telegram alert for medium+ severity (fire-and-forget)
+    if severity != "low":
+        _send_telegram_alert(event_type, severity, description, source_client_id, event_id)
+
+    return event_id
+
+
+# ---------------------------------------------------------------------------
+# Telegram auto-alert (fire-and-forget daemon thread)
+# ---------------------------------------------------------------------------
+
+_SEVERITY_EMOJI = {
+    "low":      "\xF0\x9F\x9F\xA1",  # 🟡
+    "medium":   "\xF0\x9F\x9F\xA0",  # 🟠
+    "high":     "\xF0\x9F\x94\xB4",  # 🔴
+    "critical": "\xF0\x9F\x9A\xA8",  # 🚨
+}
+
+_TYPE_LABELS = {
+    "malformed_payload":    "Malformed Payload",
+    "device_spoofing":      "Device Spoofing",
+    "publish_flood":        "Publish Flood",
+    "unauthorized_publish": "Unauthorized Publish",
+}
+
+
+def _send_telegram_alert(
+    event_type: str,
+    severity: str,
+    description: str | None,
+    source_client_id: str | None,
+    event_id: int,
+) -> None:
+    """Send Telegram alert in a background thread (non-blocking)."""
+    token  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "")
+    if not token or not chat_id:
+        return
+
+    emoji     = _SEVERITY_EMOJI.get(severity, "\xe2\x9a\xa0\xef\xb8\x8f")
+    type_label = _TYPE_LABELS.get(event_type, event_type)
+    device    = source_client_id or "unknown"
+    desc      = description or "No description"
+    time_str  = _now_utc().strftime("%H:%M:%S")
+
+    text = (
+        f"{emoji} *Security Alert*\n"
+        f"\n"
+        f"*Type:* `{type_label}`\n"
+        f"*Severity:* `{severity}`\n"
+        f"*Device:* `{device}`\n"
+        f"*Time:* {time_str}\n"
+        f"\n"
+        f"_{desc}_\n"
+        f"\n"
+        f"\xf0\x9f\x93\x8b /events\n"
+        f"\xf0\x9f\x94\x8d /audit"
+    )
+
+    def _do():
+        try:
+            r = httpx.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                timeout=10,
+            )
+            if r.is_success:
+                LOG.info("Telegram alert sent for security_event #%d (%s)", event_id, severity)
+            else:
+                LOG.error("Telegram alert failed: %d - %s", r.status_code, r.text[:200])
+        except Exception as exc:
+            LOG.error("Telegram alert exception: %s", exc)
+
+    threading.Thread(target=_do, daemon=True).start()

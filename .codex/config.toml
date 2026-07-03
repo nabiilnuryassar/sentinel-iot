@@ -1,4 +1,0 @@
-[mcp_servers.laravel-boost]
-command = "php"
-args = ["artisan", "boost:mcp"]
-cwd = "C:\\Users\\HYPE AMD\\Documents\\Mahasiswa\\Semester 4\\Project 2\\sentinel-iot\\sentinel-app"

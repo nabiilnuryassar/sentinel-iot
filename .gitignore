@@ -1,77 +1,112 @@
-/.phpunit.cache
-/bootstrap/ssr
-/node_modules
-/public/build
-/public/fonts-manifest.dev.json
-/public/hot
-/public/storage
-/resources/js/actions
-/resources/js/routes
-/resources/js/wayfinder
-/storage/*.key
-/storage/pail
-/vendor
+# ─── Build & vendor ────────────────────────────────────────
+ /.phpunit.cache
+ /bootstrap/ssr
+ /node_modules
+ /public/build
+ /public/fonts-manifest.dev.json
+ /public/hot
+ /public/storage
+ /resources/js/actions
+ /resources/js/routes
+ /resources/js/wayfinder
+ /storage/*.key
+ /storage/pail
+ /vendor
 
-# Mosquitto TLS material — keep secrets out of git, but keep .gitkeep tracked.
-/mosquitto/certs/*
-!/mosquitto/certs/.gitkeep
-/mosquitto/logs/*.log
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
-/auth.json
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
+# ─── Secrets & env ─────────────────────────────────────────
+ .env
+ .env.backup
+ .env.production
+ /mosquitto/certs/*
+ !/mosquitto/certs/.gitkeep
+ /mosquitto/logs/*.log
+ /mosquitto/secrets/
+ /auth.json
 
-# pnpm store
-.pnpm-store/
+# ─── IDE & editor ──────────────────────────────────────────
+ /.fleet
+ /.idea
+ /.nova
+ /.vscode
+ /.zed
+ .phpactor.json
 
-# Wokwi build artifacts
-wokwi/*/.build/
-wokwi/*/build/
+# ─── AI coding agent tools & configs ───────────────────────
+ .agents/
+ .claude/
+ .codex/
+ .gemini/
+ .hermes-runs/
+ .kiro/
+ .mcp.json
+ .pi/
+ .pi-lens/
+ .fusion/
+ .rpiv/
+ .opencode/
 
-# Playwright artifacts
-test-results/
-tests/e2e/playwright-report/
+# Agent instruction files (per-developer, not project code)
+ /AGENTS.md
+ /CLAUDE.md
+ /GEMINI.md
+ /HEARTBEAT.md
+ /boost.json
+ /opencode.json
 
-# Python bytecode
-__pycache__/
+# ─── Dev planning & scratch artifacts ──────────────────────
+ /plan.md
+ /SPEC.md
+ /WORKLOG.md
+ /PRD.md
+ /sim_startup.log
+ /sentinel-doctor.sh
+ /start_sim_when_docker_ready.sh
+ /issue_token.php
+ /check_tokens.php
 
-# Skill directories
-.agents/
-.pi/
-skills-lock.json
+# ─── Dev-only directories ──────────────────────────────────
+ stubs/
+ design-system/
 
-# Auto-generated diagram files
-diagram.json
-libraries.txt
-wokwi.toml
+# Dev-specific docs (internal plans, prompts, design specs, slides)
+ docs/CHANGES/
+ docs/design/
+ docs/plans/
+ docs/prompts/
+ docs/superpowers/
+ docs/demo-slides/
+ docs/demo-presentation.html
+ docs/demo-screenshots
+ docs/images
+ docs/report/Sentinel-IoT_ AI Agent-Based SOC-1.pdf
+ docs/report_guide_project.md
 
-# Mosquitto runtime logs
-mosquitto/logs/
+# ─── Python ────────────────────────────────────────────────
+ __pycache__/
+ .pnpm-store/
+
+# ─── Testing ───────────────────────────────────────────────
+ .phpunit.result.cache
+ test-results/
+ tests/e2e/playwright-report/
+ tests/e2e/tests/
+
+# ─── Build tooling ─────────────────────────────────────────
+ diagram.json
+ libraries.txt
+ wokwi.toml
+ wokwi/*/.build/
+ wokwi/*/build/
+
+# ─── Misc ──────────────────────────────────────────────────
+ Homestead.json
+ Homestead.yaml
+ npm-debug.log
+ yarn-error.log
+ mosquitto/logs/
+ public/.build_stale_root/
 
 # Duplicate nested dirs from Laravel 11 migration
-app/app/
-tests/tests/
-database/database/
-
-# Stale build artifacts
-public/.build_stale_root/
-
-# Nested test directories (Playwright sub-run reports)
-tests/e2e/tests/
-
-# Mosquitto generated secrets
-mosquitto/secrets/
-
-# Large generated artifacts (rebuildable)
-docs/demo-presentation.html
+ app/app/
+ tests/tests/
+ database/database/
